@@ -3,6 +3,7 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const captureButton = document.getElementById('capture-btn');
+const startButton = document.getElementById('start-btn');
 const context = canvas.getContext('2d');
 
 // Function to start the camera
@@ -27,8 +28,23 @@ function capturePhoto() {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 }
 
+function startBackgroundThread() {
+    console.log("starting bg thread");
+    fetch("/start");
+    console.log("started bg thread");
+}
+
+function gotMessage(e) {
+    console.log("got message:");
+    console.log(e.data);
+}
+
 // Start the camera automatically when the page loads
 window.addEventListener('load', startCamera);
 
 // Capture photo when button is clicked
 captureButton.addEventListener('click', capturePhoto);
+startButton.addEventListener('click', startBackgroundThread);
+
+const eventSource = new EventSource("/events");
+eventSource.onmessage = gotMessage;
