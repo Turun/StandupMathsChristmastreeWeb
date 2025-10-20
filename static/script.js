@@ -27,6 +27,90 @@ for (const i of Array(num_leds_log2).keys()) {
     contexts.push(ctx);
 }
 
+// populate the LED dropdown after analyzing
+function populate_led_select() {
+    const select = document.getElementById('led-select');
+    select.innerHTML = '';
+    for (let i = 0; i < num_leds; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = 'LED ' + i;
+        select.appendChild(option);
+    }
+}
+
+
+// visualize all LEDs as red markers with numbers
+function visualize_led_positions() {
+    const ctx = diff_context;
+    ctx.clearRect(0, 0, diff_canvas.width, diff_canvas.height); // clear previous drawings
+
+    ctx.fillStyle = 'red';
+    ctx.strokeStyle = 'black';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+
+    for (let i = 0; i < led_positions.length; i++) {
+        const [x, y] = led_positions[i];
+        if (x == null || y == null) continue;
+
+        // draw small red circle
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // draw LED number
+        ctx.fillStyle = 'white';
+        ctx.fillText(i, x + 6, y - 6);
+        ctx.fillStyle = 'red'; // reset
+    }
+}
+
+// visualize the lock-in difference image for a single LED
+function visualize_single_led(led_index) {
+    if (led_index == null || led_index < 0 || led_index >= num_leds) return;
+
+    // recompute lock-in image for that LED
+    const image_data_array = new Float32Array(math_canvas.width * math_canvas.height);
+    for (const shift of Array(num_leds_log2).keys()) {
+        const ctx1 = contexts[shift * 2];
+        const img1 = ctx1.getImageData(0, 0, math_canvas.width, math_canvas.height);
+        const ctx2 = contexts[shift * 2 + 1];
+        const img2 = ctx2.getImageData(0, 0, math_canvas.width, math_canvas.height);
+
+        if (led_index & (1 << shift)) {
+            add_sub(image_data_array, img1, img2);
+        } else {
+            add_sub(image_data_array, img2, img1);
+        }
+    }
+
+    // draw to diff_canvas
+    const canvas_image = diff_context.createImageData(math_canvas.width, math_canvas.height);
+    for (let i = 0; i < image_data_array.length; i++) {
+        const val = Math.min(Math.max(image_data_array[i], 0), 255); // clamp
+        canvas_image.data[4 * i] = val;
+        canvas_image.data[4 * i + 1] = val;
+        canvas_image.data[4 * i + 2] = val;
+        canvas_image.data[4 * i + 3] = 255; // fully opaque
+    }
+    diff_context.putImageData(canvas_image, 0, 0);
+
+    // overlay red marker for the LED position
+    const [x, y] = led_positions[led_index];
+    if (x != null && y != null) {
+        diff_context.fillStyle = 'red';
+        diff_context.beginPath();
+        diff_context.arc(x, y, 5, 0, 2 * Math.PI);
+        diff_context.fill();
+
+        diff_context.fillStyle = 'white';
+        diff_context.font = '12px sans-serif';
+        diff_context.fillText(led_index, x + 6, y - 6);
+    }
+}
+
 // Function to start the camera
 function startCamera() {
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -137,6 +221,7 @@ function analyze_lock_in_data() {
             image_data_diff_canvas[4 * i] = image_data[i];
             image_data_diff_canvas[4 * i + 1] = image_data[i];
             image_data_diff_canvas[4 * i + 2] = image_data[i];
+            image_data_diff_canvas[4 * i + 3] = 255;
         }
         diff_context.putImageData(image_data_diff_canvas, 0, 0);
 
@@ -211,6 +296,8 @@ function start(){
     convert_to_greyscale();
     console.log("analyzing lock in data...");
     analyze_lock_in_data();
+    console.log("visualizing LED positions...");
+    visualize_led_positions();
     console.log("normalize led positions...");
     normalize_led_positions();
     console.log("transmit led positions...");
@@ -220,4 +307,12 @@ function start(){
 
 window.addEventListener('load', startCamera);
 startButton.addEventListener('click',start);
+
+populate_led_select();
+const visualizeButton = document.getElementById('visualize-btn');
+visualizeButton.addEventListener('click', () => {
+    const select = document.getElementById('led-select');
+    const ledIndex = parseInt(select.value);
+    visualize_single_led(ledIndex);
+});
 
