@@ -1,76 +1,96 @@
-body {
-    font-family: Arial, sans-serif;
+body, html {
     margin: 0;
     padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
     background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1200px;
+    height: 100%;
     padding: 20px;
+    box-sizing: border-box;
     text-align: center;
 }
 
+/* Layout for canvases and controls */
 .main-layout {
     display: flex;
-    flex-wrap: wrap;        /* allow stacking on small screens */
-    justify-content: center;
-    align-items: flex-start;
+    flex: 1 1 auto;
+    justify-content: space-between;
+    align-items: stretch;
     gap: 20px;
-    max-height: 90vh;       /* fit mostly in viewport */
+    height: 100%;
 }
 
 /* Canvas containers */
 .canvas-container {
-    flex: 1 1 300px;       /* grow/shrink with a minimum width */
+    flex: 1 1 0;
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
 video, canvas {
-    width: auto;
-    max-width: 100%;
-    max-height: 60vh;       /* limit height */
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    object-fit: contain;
 }
 
-/* Controls styling */
+/* Controls container sticky at bottom */
 .controls-container {
     display: flex;
     flex-direction: column;
-    gap: 15px;
     align-items: center;
+    gap: 10px;
     min-width: 180px;
-    order: 2;               /* ensure it appears last on small screens */
+    position: sticky;
+    bottom: 10px;
+    background-color: rgba(255,255,255,0.9);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 10;
 }
 
+/* Buttons */
 .controls-container button {
     padding: 10px 20px;
     font-size: 16px;
-    cursor: pointer;
     border: none;
     border-radius: 5px;
+    cursor: pointer;
 }
 
-/* Start button red */
 #start-btn {
     background-color: #e74c3c;
     color: white;
 }
+
 #start-btn:hover {
     background-color: #c0392b;
 }
 
-/* Other buttons green */
 .controls-container button:not(#start-btn) {
     background-color: #4CAF50;
     color: white;
 }
+
 .controls-container button:not(#start-btn):hover {
     background-color: #45a049;
 }
 
-/* Previous / next buttons in group */
 .btn-group {
     display: flex;
     gap: 5px;
@@ -81,21 +101,17 @@ select {
     font-size: 16px;
 }
 
-/* Responsive: stack vertically on narrow screens */
+/* Responsive: stack canvases on narrow screens */
 @media (max-width: 900px) {
     .main-layout {
         flex-direction: column;
-        align-items: center;
+        gap: 10px;
     }
 
     .controls-container {
-        order: 1;       /* controls appear below canvases */
-        min-width: unset;
+        position: sticky;
+        bottom: 0;
         width: 100%;
-    }
-
-    .canvas-container {
-        max-width: 90%;
     }
 
     video, canvas {
