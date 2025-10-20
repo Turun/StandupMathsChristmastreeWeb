@@ -86,13 +86,22 @@ function visualize_single_led(led_index) {
         }
     }
 
+    // normalize image array
+    let minVal = Infinity;
+    let maxVal = -Infinity;
+    for (let i = 0; i < image_data_array.length; i++) {
+        if (image_data_array[i] < minVal) minVal = image_data_array[i];
+        if (image_data_array[i] > maxVal) maxVal = image_data_array[i];
+    }
+    const range = maxVal - minVal || 1; // avoid division by zero
+
     // draw to diff_canvas
     const canvas_image = diff_context.createImageData(math_canvas.width, math_canvas.height);
     for (let i = 0; i < image_data_array.length; i++) {
-        const val = Math.min(Math.max(image_data_array[i], 0), 255); // clamp
-        canvas_image.data[4 * i] = val;
-        canvas_image.data[4 * i + 1] = val;
-        canvas_image.data[4 * i + 2] = val;
+        const normalized = ((image_data_array[i] - minVal) / range) * 255;
+        canvas_image.data[4 * i] = normalized;
+        canvas_image.data[4 * i + 1] = normalized;
+        canvas_image.data[4 * i + 2] = normalized;
         canvas_image.data[4 * i + 3] = 255; // fully opaque
     }
     diff_context.putImageData(canvas_image, 0, 0);
@@ -110,6 +119,7 @@ function visualize_single_led(led_index) {
         diff_context.fillText(led_index, x + 6, y - 6);
     }
 }
+
 
 // Function to start the camera
 function startCamera() {
