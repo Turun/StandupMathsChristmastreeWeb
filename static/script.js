@@ -1,6 +1,7 @@
 const num_leds = 100;
 const num_leds_log2 = Math.ceil(Math.log2(num_leds));
-const led_positions = [];
+const led_positions_raw = [];
+const led_positions_normalized = [];
 
 // Select HTML elements
 const video = document.getElementById('video');
@@ -46,24 +47,24 @@ function visualize_led_positions() {
     ctx.clearRect(0, 0, diff_canvas.width, diff_canvas.height); // clear previous drawings
 
     ctx.fillStyle = 'red';
-    ctx.strokeStyle = 'black';
+    ctx.strokeStyle = 'red';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
 
-    for (let i = 0; i < led_positions.length; i++) {
-        const [x, y] = led_positions[i];
+    for (let i = 0; i < led_positions_raw.length; i++) {
+        const [x, y] = led_positions_raw[i];
         if (x == null || y == null) continue;
 
         // draw small red circle
+        ctx.fillStyle = 'red';
         ctx.beginPath();
         ctx.arc(x, y, 5, 0, 2 * Math.PI);
         ctx.fill();
 
         // draw LED number
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = 'black';
         ctx.fillText(i, x + 6, y - 6);
-        ctx.fillStyle = 'red'; // reset
     }
 }
 
@@ -107,16 +108,27 @@ function visualize_single_led(led_index) {
     diff_context.putImageData(canvas_image, 0, 0);
 
     // overlay red marker for the LED position
-    const [x, y] = led_positions[led_index];
+    const [x, y] = led_positions_raw[led_index];
     if (x != null && y != null) {
-        diff_context.fillStyle = 'red';
-        diff_context.beginPath();
-        diff_context.arc(x, y, 5, 0, 2 * Math.PI);
-        diff_context.fill();
+        const armLength = 10;   // length of each arm
+        const gap = 1;          // half of the 3px center gap
+        diff_context.strokeStyle = "red";
+        diff_context.lineWidth = 1;
 
-        diff_context.fillStyle = 'white';
-        diff_context.font = '12px sans-serif';
-        diff_context.fillText(led_index, x + 6, y - 6);
+        diff_context.beginPath();
+        // horizontal left
+        diff_context.moveTo(x - armLength, y);
+        diff_context.lineTo(x - gap, y);
+        // horizontal right
+        diff_context.moveTo(x + gap, y);
+        diff_context.lineTo(x + armLength, y);
+        // vertical top
+        diff_context.moveTo(x, y - armLength);
+        diff_context.lineTo(x, y - gap);
+        // vertical bottom
+        diff_context.moveTo(x, y + gap);
+        diff_context.lineTo(x, y + armLength);
+        diff_context.stroke();
     }
 }
 
@@ -248,10 +260,10 @@ function analyze_lock_in_data() {
                 y = Math.floor(i / math_canvas.width);
             }
         }
-        led_positions[led_index] = [x, y];
+        led_positions_raw[led_index] = [x, y];
     }
     console.log("got the following LED positions in pixel coordinates:");
-    console.log(led_positions);
+    console.log(led_positions_raw);
 }
 
 
@@ -261,7 +273,7 @@ function normalize_led_positions(){
     let min_y = math_canvas.height;
     let max_x = 0;
     let max_y = 0;
-    for (const p of led_positions) {
+    for (const p of led_positions_raw) {
         if (p[0] < min_x){
             min_x = p[0];
         }
@@ -276,21 +288,23 @@ function normalize_led_positions(){
         }
     }
 
-    for (const p of led_positions) {
-        p[0] = (p[0] - min_x) / (max_x - min_x);
-        p[1] = (p[1] - min_y) / (max_y - min_y);
+    for (const i of Array(num_leds).keys()) {
+        const [raw_x, raw_y] = led_positions_raw[i];
+        norm_x = (raw_x - min_x) / (max_x - min_x);
+        norm_y = (raw_y - min_y) / (max_y - min_y);
+        led_positions_normalized[i] = [norm_x, norm_y];
     }
     console.log("normalized pixel positions to the following values");
-    console.log(led_positions);
+    console.log(led_positions_normalized);
 }
 
 // after we have determined the led positions we can tell the server our results.
 // This is required for fast animations, we simply cannot control leds from the
 // client device with a few ms of network delay in the way.
 function transmit_led_positions(){
-    const data = {}
+    const data = {};
     for (const i of Array(num_leds).keys()) {
-        data[i] = led_positions[i]
+        data[i] = led_positions_normalized[i];
     }
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "set_led_positions", false);
