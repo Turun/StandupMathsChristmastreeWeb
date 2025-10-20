@@ -2,6 +2,7 @@ const num_leds = 100;
 const num_leds_log2 = Math.ceil(Math.log2(num_leds));
 const led_positions_raw = [];
 const led_positions_normalized = [];
+let current_led_index = 0;
 
 // Select HTML elements
 const video = document.getElementById('video');
@@ -38,8 +39,42 @@ function populate_led_select() {
         option.textContent = 'LED ' + i;
         select.appendChild(option);
     }
+    select.value = current_led_index;
 }
 
+function setup_buttons() {
+    const visualizeBtn = document.getElementById('visualize-btn');
+    const overviewBtn = document.getElementById('overview-btn');
+    const prevBtn = document.getElementById('prev-led-btn');
+    const nextBtn = document.getElementById('next-led-btn');
+    const select = document.getElementById('led-select');
+
+    visualizeBtn.addEventListener('click', () => {
+        current_led_index = parseInt(select.value);
+        visualize_single_led(current_led_index);
+    });
+
+    overviewBtn.addEventListener('click', () => {
+        visualize_led_positions(); // show all LEDs
+    });
+
+    prevBtn.addEventListener('click', () => {
+        current_led_index = (current_led_index - 1 + num_leds) % num_leds;
+        select.value = current_led_index;
+        visualize_single_led(current_led_index);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        current_led_index = (current_led_index + 1) % num_leds;
+        select.value = current_led_index;
+        visualize_single_led(current_led_index);
+    });
+
+    // keep dropdown in sync if the user manually changes it
+    select.addEventListener('change', () => {
+        current_led_index = parseInt(select.value);
+    });
+}
 
 // visualize all LEDs as red markers with numbers
 function visualize_led_positions() {
@@ -132,7 +167,6 @@ function visualize_single_led(led_index) {
     }
 }
 
-
 // Function to start the camera
 function startCamera() {
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -209,7 +243,6 @@ function convert_to_greyscale(){
     }
 }
 
-
 // for every pixel in base, addition and subtraction, perform the calculation:
 // base = base + addition - subtraction
 function add_sub(base, addition, subtraction) {
@@ -265,7 +298,6 @@ function analyze_lock_in_data() {
     console.log("got the following LED positions in pixel coordinates:");
     console.log(led_positions_raw);
 }
-
 
 // after we have determined the position of the leds in terms of pixels, we need to rescale them so that they are in a 1x1 box
 function normalize_led_positions(){
@@ -333,10 +365,5 @@ window.addEventListener('load', startCamera);
 startButton.addEventListener('click',start);
 
 populate_led_select();
-const visualizeButton = document.getElementById('visualize-btn');
-visualizeButton.addEventListener('click', () => {
-    const select = document.getElementById('led-select');
-    const ledIndex = parseInt(select.value);
-    visualize_single_led(ledIndex);
-});
+setup_buttons();
 
