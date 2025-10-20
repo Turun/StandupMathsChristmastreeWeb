@@ -2,24 +2,38 @@
 <html>
 
 <head>
-  <title>Testing...</title>
+  <title>Camera Capture App</title>
   <link rel="stylesheet" href="static/style.css">
 </head>
 
 <body>
   <div class="container">
     <h1>Camera Capture App</h1>
-    <video id="video" autoplay></video>
-    <button id="start-btn">Start The Process</button>
-    <br><br>
-    <label for="led-select">Select LED:</label>
-    <select id="led-select"></select>
-    <button id="visualize-btn">Show LED Data</button>
-    <button id="overview-btn">Show Overview (All LEDs)</button>
-    <button id="prev-led-btn">Previous LED</button>
-    <button id="next-led-btn">Next LED</button>
-    <br><br>
-    <canvas id="canvas-diff"></canvas>
+    <div class="main-layout">
+      <!-- Video canvas -->
+      <div class="canvas-container">
+        <video id="video" autoplay></video>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button id="start-btn">Start</button>
+        <hr>
+        <label for="led-select">Select LED:</label>
+        <select id="led-select"></select>
+        <div class="btn-group">
+          <button id="prev-led-btn">&lt;</button>
+          <button id="visualize-btn">Show LED</button>
+          <button id="next-led-btn">&gt;</button>
+        </div>
+        <button id="overview-btn">Show Overview</button>
+      </div>
+
+      <!-- Diff canvas -->
+      <div class="canvas-container">
+        <canvas id="canvas-diff"></canvas>
+      </div>
+    </div>
   </div>
   <script src="static/script.js"></script>
 </body>
