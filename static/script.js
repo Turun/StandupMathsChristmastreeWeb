@@ -1,8 +1,33 @@
 const num_leds = 100;
-// const cycle_base = 5;
+
+
+
+// const cycle_base = 9;
 // const num_leds_log_cycle_base = Math.log(num_leds) / Math.log(cycle_base);
 // const num_cycles = cycle_base * Math.ceil(num_leds_log_cycle_base);
-const num_cycles = 2 * num_leds;
+// // returns true if the led should turn on for this cycle, false if not.
+// function is_led_on(led_index, cycle) {
+//     let major_cycle = Math.floor(cycle / cycle_base);
+//     let minor_cycle = cycle % cycle_base;
+
+//     // shift right, so that the digit to check is the left most if presented in base cycle_base
+//     let number = Math.floor(led_index / Math.pow(cycle_base, major_cycle));
+//     // check on that right most digit now
+//     return number % cycle_base === minor_cycle;
+// }
+
+
+const num_cycles = num_leds;
+// returns true if the led should turn on for this cycle, false if not.
+function is_led_on(led_index, cycle) {
+    // turn on leds one by one.
+    return led_index === cycle;
+}
+
+
+
+
+
 const led_positions_raw = [];
 const led_positions_normalized = [];
 let current_led_index = 0;
@@ -27,27 +52,6 @@ for (const i of Array(num_cycles).keys()) {
     contexts.push(ctx);
 }
 
-// returns true if the led should turn on for this cycle, false if not.
-// extracted into a method, because it is used several times and because
-// it makes it easier to try out different cycle schemes.
-function is_led_on(led_index, cycle) {
-    // let major_cycle = Math.floor(cycle / cycle_base);
-    // let minor_cycle = cycle % cycle_base;
-
-    // // shift right, so that the digit to check is the left most if presented in base cycle_base
-    // let number = Math.floor(led_index / Math.pow(cycle_base, major_cycle));
-    // // check on that right most digit now
-    // return number % cycle_base === minor_cycle;
-    if (cycle % 2 == 1) {
-        return false;
-    } else {
-        if (led_index * 2 == cycle) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-}
 
 // for many led detection cycles we have much more off images than on images.
 // Thus we need to weigh them so that unaffected regions of the image come
