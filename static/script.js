@@ -1,5 +1,8 @@
 const num_leds = 100;
-const num_leds_log2 = Math.ceil(Math.log2(num_leds));
+// const cycle_base = 5;
+// const num_leds_log_cycle_base = Math.log(num_leds) / Math.log(cycle_base);
+// const num_cycles = cycle_base * Math.ceil(num_leds_log_cycle_base);
+const num_cycles = 2 * num_leds;
 const led_positions_raw = [];
 const led_positions_normalized = [];
 let current_led_index = 0;
@@ -17,16 +20,63 @@ const math_ctx = math_canvas.getContext('2d', { willReadFrequently: true });
 // get the list of all canvases which we will need to do math.
 const canvases = [];
 const contexts = [];
-for (const i of Array(num_leds_log2).keys()) {
+for (const i of Array(num_cycles).keys()) {
     let can = new OffscreenCanvas(100, 100);
     let ctx = can.getContext('2d', { willReadFrequently: true });
     canvases.push(can);
     contexts.push(ctx);
+}
 
-    can = new OffscreenCanvas(100, 100);
-    ctx = can.getContext('2d', { willReadFrequently: true });
-    canvases.push(can);
-    contexts.push(ctx);
+// returns true if the led should turn on for this cycle, false if not.
+// extracted into a method, because it is used several times and because
+// it makes it easier to try out different cycle schemes.
+function is_led_on(led_index, cycle) {
+    // let major_cycle = Math.floor(cycle / cycle_base);
+    // let minor_cycle = cycle % cycle_base;
+
+    // // shift right, so that the digit to check is the left most if presented in base cycle_base
+    // let number = Math.floor(led_index / Math.pow(cycle_base, major_cycle));
+    // // check on that right most digit now
+    // return number % cycle_base === minor_cycle;
+    if (cycle % 2 == 1) {
+        return false;
+    } else {
+        if (led_index * 2 == cycle) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+// for many led detection cycles we have much more off images than on images.
+// Thus we need to weigh them so that unaffected regions of the image come
+// out as zero after adding all on and all weighted off images.
+function off_weight(led_index) {
+    let count_on = 0;
+    let count_off = 0;
+    for (const cycle of Array(num_cycles).keys()) {
+        if (is_led_on(led_index, cycle)) {
+            count_on += 1;
+        } else {
+            count_off += 1;
+        }
+    }
+    return count_on / count_off;
+}
+
+function test_is_led_on(max_led_index, max_cycle)  {
+    for (let cycle = 0; cycle <= max_cycle; cycle += 1) {
+        let out = "";
+        for (let led_index = 0; led_index <= max_led_index; led_index += 1) {
+            if (is_led_on(led_index, cycle)) {
+                out += "x";
+            } else {
+                out += "_"
+            }
+        }
+        console.log(out);
+    }
 }
 
 // populate the LED dropdown after analyzing
@@ -109,16 +159,15 @@ function visualize_single_led(led_index) {
 
     // recompute lock-in image for that LED
     const image_data_array = new Float32Array(math_canvas.width * math_canvas.height);
-    for (const shift of Array(num_leds_log2).keys()) {
-        const ctx1 = contexts[shift * 2];
-        const img1 = ctx1.getImageData(0, 0, math_canvas.width, math_canvas.height);
-        const ctx2 = contexts[shift * 2 + 1];
-        const img2 = ctx2.getImageData(0, 0, math_canvas.width, math_canvas.height);
+    for (const shift of Array(num_cycles).keys()) {
+        const ctx = contexts[shift];
+        const img = ctx.getImageData(0, 0, math_canvas.width, math_canvas.height);
 
-        if (led_index & (1 << shift)) {
-            add_sub(image_data_array, img1, img2);
+        if (is_led_on(led_index, shift)) {
+            add(image_data_array, img);
         } else {
-            add_sub(image_data_array, img2, img1);
+            let this_off_weight = off_weight(led_index);
+            sub(image_data_array, img, this_off_weight);
         }
     }
 
@@ -207,21 +256,13 @@ function configure_leds(dict) {
 
 // main code block, tell the pi what to do, take a picture and then move on.
 function capture_lock_in_data(){
-    for (const shift of Array(num_leds_log2).keys()) {
+    for (const shift of Array(num_cycles).keys()) {
         var data = {};
         for (const led_index of Array(num_leds).keys()) {
-            data[led_index] = Boolean(led_index & 1 << shift);
+            data[led_index] = is_led_on(led_index, shift);
         }
         configure_leds(data);
-        contexts[shift * 2].drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-
-
-        var data = {};
-        for (const led_index of Array(num_leds).keys()) {
-            data[led_index] = !Boolean(led_index & 1 << shift);
-        }
-        configure_leds(data);
-        contexts[shift * 2 + 1].drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+        contexts[shift].drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
     }
 }
 
@@ -243,12 +284,19 @@ function convert_to_greyscale(){
     }
 }
 
-// for every pixel in base, addition and subtraction, perform the calculation:
-// base = base + addition - subtraction
-function add_sub(base, addition, subtraction) {
+// for every values in base, add the value of the addition image (in the red channel, presumed to be converted to greyscale before)
+function add(base, addition) {
     for (let i = 0; i < base.length; i += 1) {
         base[i] += addition.data[i * 4];
-        base[i] -= subtraction.data[i * 4];
+    }
+}
+
+// for every values in base, subtract the value of the subtraction image (in the red channel, presumed to be converted to greyscale before)
+//
+// The subtracted image is weighted, to ensure parts of the image that are unaffected by the led come out to approximately 0, not -1000 or something.
+function sub(base, subtraction, weight) {
+    for (let i = 0; i < base.length; i += 1) {
+        base[i] -= subtraction.data[i * 4] * weight;
     }
 }
 
@@ -257,16 +305,15 @@ function analyze_lock_in_data() {
     for (const led_index of Array(num_leds).keys()) {
         console.log("analyzing data for LED " + led_index);
         let image_data = new Float32Array(math_canvas.width * math_canvas.height);
-        for (const shift of Array(num_leds_log2).keys()){
-            const ctx1 = contexts[shift * 2];
-            const img1 = ctx1.getImageData(0, 0, math_canvas.width, math_canvas.height);
-            const ctx2 = contexts[shift * 2 + 1];
-            const img2 = ctx2.getImageData(0, 0, math_canvas.width, math_canvas.height);
+        for (const shift of Array(num_cycles).keys()){
+            const ctx = contexts[shift];
+            const img = ctx.getImageData(0, 0, math_canvas.width, math_canvas.height);
 
-            if (led_index & 1 << shift){  // led was on in 1, off in 2
-                add_sub(image_data, img1, img2);
-            } else {  // led was off in 1, on in 2
-                add_sub(image_data, img2, img1);
+            if (is_led_on(led_index, shift)){
+                add(image_data, img);
+            } else {
+                let this_off_weight = off_weight(led_index);
+                sub(image_data, img, this_off_weight);
             }
         }
 

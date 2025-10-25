@@ -58,7 +58,7 @@ class FakeLEDControl:
         fig.patch.set_facecolor('black')
         ax.set_facecolor('black')
 
-        sizes = np.random.uniform(100, 1000, size=100)
+        sizes = np.random.uniform(100, 100, size=100)
         points = q.get_nowait()
         xs, ys = zip(*points)
         sc = ax.scatter(xs, ys, color="white", s=sizes)
@@ -72,7 +72,7 @@ class FakeLEDControl:
             except queue_module.Empty:
                 pass
 
-            if points is not None:
+            if points:
                 sc.set_offsets(points)
             return sc,
 
