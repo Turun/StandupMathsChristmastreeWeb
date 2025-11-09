@@ -1,4 +1,4 @@
-const num_leds = 100;
+const num_leds = 20;
 
 
 
@@ -24,6 +24,8 @@ function is_led_on(led_index, cycle) {
     return led_index === cycle;
 }
 
+
+// TODO: next up we will have to implement x and y scan and then stitch together the coordinates to get 3D position information.
 
 
 
@@ -288,6 +290,55 @@ function convert_to_greyscale(){
     }
 }
 
+// blur all images with adjustable kernel size
+function blur_images(half_kernel_size = 4) {
+    if (half_kernel_size < 1) half_kernel_size = 1;
+
+    for (const ctx of contexts) {
+        const width = ctx.canvas.width;
+        const height = ctx.canvas.height;
+
+        const src = ctx.getImageData(0, 0, width, height);
+        const dst = ctx.createImageData(width, height);
+
+        const srcData = src.data;
+        const dstData = dst.data;
+
+        // loop through every pixel
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                let r = 0, g = 0, b = 0, a = 0;
+                let count = 0;
+
+                // average over the kernel neighborhood
+                for (let ky = -half_kernel_size; ky <= half_kernel_size; ky++) {
+                    for (let kx = -half_kernel_size; kx <= half_kernel_size; kx++) {
+                        const px = x + kx;
+                        const py = y + ky;
+
+                        if (px >= 0 && px < width && py >= 0 && py < height) {
+                            const idx = (py * width + px) * 4;
+                            r += srcData[idx];
+                            g += srcData[idx + 1];
+                            b += srcData[idx + 2];
+                            a += srcData[idx + 3];
+                            count++;
+                        }
+                    }
+                }
+
+                const i = (y * width + x) * 4;
+                dstData[i] = r / count;
+                dstData[i + 1] = g / count;
+                dstData[i + 2] = b / count;
+                dstData[i + 3] = a / count;
+            }
+        }
+
+        ctx.putImageData(dst, 0, 0);
+    }
+}
+
 // for every values in base, add the value of the addition image (in the red channel, presumed to be converted to greyscale before)
 function add(base, addition) {
     for (let i = 0; i < base.length; i += 1) {
@@ -401,6 +452,8 @@ function start(){
     capture_lock_in_data();
     console.log("converting images to greyscale...");
     convert_to_greyscale();
+    console.log("bluring images...");
+    blur_images();
     console.log("analyzing lock in data...");
     analyze_lock_in_data();
     console.log("visualizing LED positions...");

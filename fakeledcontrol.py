@@ -41,7 +41,12 @@ class FakeLEDControl:
         """Update LED state locally and send to plot process."""
         print(f"updating leds to: {data}")
         for index, on in data.items():
-            self.leds[int(index)].is_on = on
+            try:
+                self.leds[int(index)].is_on = on
+            except IndexError:
+                # if the frontend tries to control more LEDs, just don't do
+                # anything. It's how the final product will work anyway.
+                pass
 
     def redraw(self):
         """Push the current LED state to the plotting process."""
