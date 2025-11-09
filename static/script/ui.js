@@ -254,6 +254,11 @@ export function setup_ui(
             led_positions_raw_x,
         );
         visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x);
+        document.getElementById('prev-led-btn-x').disabled = false;
+        document.getElementById('visualize-btn-x').disabled = false;
+        document.getElementById('next-led-btn-x').disabled = false;
+        document.getElementById('overview-btn-x').disabled = false;
+        
     });
     const startButtonY = document.getElementById('start-btn-y');
     startButtonY.addEventListener('click', () => {
@@ -268,10 +273,19 @@ export function setup_ui(
             led_positions_raw_y,
         );
         visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
+        document.getElementById('prev-led-btn-y').disabled = false;
+        document.getElementById('visualize-btn-y').disabled = false;
+        document.getElementById('next-led-btn-y').disabled = false;
+        document.getElementById('overview-btn-y').disabled = false;
     });
     const transmitButton = document.getElementById('transmit-btn');
     transmitButton.addEventListener('click', () => {
-        merge_and_transmit(led_positions_raw_x, led_positions_raw_y, led_positions_normalized);
+        merge_and_transmit(
+            num_leds,
+            led_positions_raw_x,
+            led_positions_raw_y,
+            led_positions_normalized
+        );
     });
 
     populate_led_select(num_leds);

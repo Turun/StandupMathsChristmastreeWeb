@@ -24,7 +24,7 @@ def configure_leds():
     led_control.update(data)
     led_control.redraw()
     import time
-    time.sleep(0.2)
+    time.sleep(0.5)
     return "success"
 
 
@@ -36,14 +36,25 @@ def set_led_positions():
     print(data)
     print("=" * 80)
 
-    # import matplotlib.pyplot as plt
-    # plt.scatter(
-    #     [xy[0] for i, xy in data.items()],
-    #     [xy[1] for i, xy in data.items()],
-    # )
-    # for index, xy in data:
-    #     plt.text(xy[0], xy[1], f"{index}", transform=plt.gca().transAxes)
-    # plt.show()
+    import matplotlib.pyplot as plt
+    """
+    it says
+    server.py:40: UserWarning: Starting a Matplotlib GUI outside of the main thread will likely fail.
+          fig = plt.figure()
+    server.py:49: UserWarning: Starting a Matplotlib GUI outside of the main thread will likely fail.
+          plt.show()
+    But as of writing this comment/code, it works just fine.
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(
+        [xyz[0] for i, xyz in data.items()],
+        [xyz[1] for i, xyz in data.items()],
+        [xyz[2] for i, xyz in data.items()],
+    )
+    # for index, xyz in data.items():
+    #     ax.text(xyz[0], xyz[1], xyz[2], f"{index}", transform=plt.gca().transAxes)
+    plt.show()
     return "success"
     
 if __name__ == "__main__":

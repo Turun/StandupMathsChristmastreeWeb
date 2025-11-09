@@ -4,7 +4,7 @@
 
 import { setup_ui } from "./ui.js";
 
-const num_leds = 5;
+const num_leds = 20;
 const num_cycles = num_leds;
 const led_positions_raw_x = [];
 const led_positions_raw_y = [];

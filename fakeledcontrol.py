@@ -4,17 +4,37 @@ from matplotlib.animation import FuncAnimation
 from multiprocessing import Process, Queue
 import queue as queue_module
 import time
-import numpy as np
+import math
 import random
 
 random.seed(123)
-NUM_LEDS = 5
+NUM_LEDS = 20
+
+TREE_RADIUS = 4
+TREE_HEIGHT = 10
+
+
+def generate_cone_point():
+    # return (
+    #     random.random(),
+    #     random.random(),
+    #     random.random(),
+    # )
+    # height position from base (0) to tip (height)
+    z = random.uniform(0, TREE_HEIGHT)
+    # radius shrinks linearly toward the tip
+    r = (1 - z / TREE_HEIGHT) * TREE_RADIUS
+    # angle around the cone (random or evenly spaced)
+    theta = random.uniform(0, 2 * math.pi)
+    # compute x, y using polar coordinates
+    x = r * math.cos(theta)
+    y = r * math.sin(theta)
+    return (x, y, z)
+
 
 class FakeLED:
     def __init__(self, index):
-        self.x = random.random()
-        self.y = random.random()
-        self.z = random.random()
+        self.x, self.y, self.z = generate_cone_point()
         self.is_on = True
 
 
@@ -64,9 +84,9 @@ class FakeLEDControl:
         plt.ion()
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
-        ax.set_zlim(0, 1)
+        ax.set_xlim(-TREE_RADIUS, TREE_RADIUS)
+        ax.set_ylim(-TREE_RADIUS, TREE_RADIUS)
+        ax.set_zlim(0, TREE_HEIGHT)
         ax.xaxis.pane.fill = False
         ax.yaxis.pane.fill = False
         ax.zaxis.pane.fill = False
