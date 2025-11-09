@@ -16,15 +16,23 @@
 
       <!-- Controls -->
       <div class="controls-container">
-        <button id="start-btn">Start</button>
+        <button id="start-btn-x" class="action-btn">Capture X Coords</button>
+        <button id="start-btn-y" class="action-btn">Capture Y Coords</button>
         <label for="led-select">Select LED:</label>
         <select id="led-select"></select>
         <div class="btn-group">
-          <button id="prev-led-btn">&lt;</button>
-          <button id="visualize-btn">Show LED</button>
-          <button id="next-led-btn">&gt;</button>
+          <button id="prev-led-btn-x">&lt;</button>
+          <button id="visualize-btn-x">Show LED X</button>
+          <button id="next-led-btn-x">&gt;</button>
         </div>
-        <button id="overview-btn">Show Overview</button>
+        <button id="overview-btn-x">Show Overview X</button>
+        <div class="btn-group">
+          <button id="prev-led-btn-y">&lt;</button>
+          <button id="visualize-btn-y">Show LED Y</button>
+          <button id="next-led-btn-y">&gt;</button>
+        </div>
+        <button id="overview-btn-y">Show Overview Y</button>
+        <button id="transmit-btn" class="action-btn">Transmit 3D pos</button>
       </div>
 
       <!-- Diff canvas -->
@@ -33,7 +41,8 @@
       </div>
     </div>
   </div>
-  <script src="static/script.js"></script>
+  <!-- <script src="static/script.js"></script> -->
+  <script type="module" src="static/script/main.js"></script>
 </body>
 
 </html>

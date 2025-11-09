@@ -24,7 +24,7 @@ def configure_leds():
     led_control.update(data)
     led_control.redraw()
     import time
-    time.sleep(1)
+    time.sleep(0.2)
     return "success"
 
 

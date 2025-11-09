@@ -72,21 +72,21 @@ video, canvas {
     cursor: pointer;
 }
 
-#start-btn {
+.action-btn {
     background-color: #e74c3c;
     color: white;
 }
 
-#start-btn:hover {
+.action-btn:hover {
     background-color: #c0392b;
 }
 
-.controls-container button:not(#start-btn) {
+.controls-container button:not(.action-btn) {
     background-color: #4CAF50;
     color: white;
 }
 
-.controls-container button:not(#start-btn):hover {
+.controls-container button:not(.action-btn):hover {
     background-color: #45a049;
 }
 

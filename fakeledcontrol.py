@@ -8,7 +8,7 @@ import numpy as np
 import random
 
 random.seed(123)
-
+NUM_LEDS = 5
 
 class FakeLED:
     def __init__(self, index):
@@ -27,7 +27,7 @@ class FakeLEDControl:
     """
 
     def __init__(self):
-        self.leds = [FakeLED(i) for i in range(20)]
+        self.leds = [FakeLED(i) for i in range(NUM_LEDS)]
 
         # Create a multiprocessing Queue for communication
         self.queue = Queue()
