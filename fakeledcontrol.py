@@ -41,10 +41,11 @@ class FakeLEDControl:
 
     def redraw(self):
         """Push the current LED state to the plotting process."""
-        active_points = [[fl.x, fl.y] for fl in self.leds if fl.is_on]
+        point_coords = [(fl.x, fl.y) for fl in self.leds]
+        active_points = [fl.is_on for fl in self.leds]
         # Non-blocking send (in case the queue is full)
         try:
-            self.queue.put_nowait(active_points)
+            self.queue.put_nowait((point_coords, active_points))
         except queue_module.Full:
             pass
 
@@ -59,24 +60,25 @@ class FakeLEDControl:
         ax.set_facecolor('black')
 
         sizes = np.random.uniform(100, 100, size=100)
-        points = q.get_nowait()
-        xs, ys = zip(*points)
+        point_coords, points_active = q.get_nowait()
+        xs, ys = zip(*point_coords)
         sc = ax.scatter(xs, ys, color="white", s=sizes)
 
         def update_plot(_):
             try:
                 # Try to get the latest LED positions without blocking
-                points = None
+                points_active = None
                 while True:
-                    points = q.get_nowait()
+                    _, points_active = q.get_nowait()
             except queue_module.Empty:
                 pass
 
-            if points:
-                sc.set_offsets(points)
+            if points_active:
+                colors = ["white" if p else "black" for p in points_active]
+                sc.set_color(colors)
             return sc,
 
-        ani = FuncAnimation(fig, update_plot, interval=100, cache_frame_data=False)
+        _ = FuncAnimation(fig, update_plot, interval=100, cache_frame_data=False)
         plt.show(block=True)
 
 
