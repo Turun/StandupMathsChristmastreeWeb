@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.widgets import Button
 from matplotlib.animation import FuncAnimation
 from multiprocessing import Process, Queue
 import queue as queue_module
@@ -6,11 +7,14 @@ import time
 import numpy as np
 import random
 
+random.seed(123)
+
 
 class FakeLED:
     def __init__(self, index):
-        self.x = index % 10
-        self.y = index // 10
+        self.x = random.random()
+        self.y = random.random()
+        self.z = random.random()
         self.is_on = True
 
 
@@ -23,7 +27,7 @@ class FakeLEDControl:
     """
 
     def __init__(self):
-        self.leds = [FakeLED(i) for i in range(100)]
+        self.leds = [FakeLED(i) for i in range(20)]
 
         # Create a multiprocessing Queue for communication
         self.queue = Queue()
@@ -41,7 +45,7 @@ class FakeLEDControl:
 
     def redraw(self):
         """Push the current LED state to the plotting process."""
-        point_coords = [(fl.x, fl.y) for fl in self.leds]
+        point_coords = [(fl.x, fl.y, fl.z) for fl in self.leds]
         active_points = [fl.is_on for fl in self.leds]
         # Non-blocking send (in case the queue is full)
         try:
@@ -53,16 +57,48 @@ class FakeLEDControl:
     def _run_plot_process(q: Queue):
         """Run the Matplotlib plot in a separate process."""
         plt.ion()
-        fig, ax = plt.subplots()
-        ax.set_xlim(-1, 10)
-        ax.set_ylim(-1, 10)
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_zlim(0, 1)
+        ax.xaxis.pane.fill = False
+        ax.yaxis.pane.fill = False
+        ax.zaxis.pane.fill = False
+        ax.xaxis.pane.set_edgecolor("black")
+        ax.yaxis.pane.set_edgecolor("black")
+        ax.zaxis.pane.set_edgecolor("black")
+        ax.grid(False)
+        # ax.set_frame_on(False)
         fig.patch.set_facecolor('black')
         ax.set_facecolor('black')
 
-        sizes = np.random.uniform(100, 100, size=100)
+        
+        # --- Button callbacks ---
+        def align_x(event):
+            # Elevation 0°, azimuth 0° → looking along +X
+            ax.view_init(elev=0, azim=0)
+            plt.draw()
+
+        def align_y(event):
+            # Elevation 0°, azimuth 90° → looking along +Y
+            ax.view_init(elev=0, azim=90)
+            plt.draw()
+
+        # --- Add buttons to the figure ---
+        # Adjust these positions to taste (x, y, width, height)
+        ax_button_x = plt.axes([0.8, 0.05, 0.08, 0.05])
+        ax_button_y = plt.axes([0.9, 0.05, 0.08, 0.05])
+
+        btn_x = Button(ax_button_x, 'Align X')
+        btn_y = Button(ax_button_y, 'Align Y')
+
+        btn_x.on_clicked(align_x)
+        btn_y.on_clicked(align_y)
+
         point_coords, points_active = q.get_nowait()
-        xs, ys = zip(*point_coords)
-        sc = ax.scatter(xs, ys, color="white", s=sizes)
+        xs, ys, zs = zip(*point_coords)
+        sc = ax.scatter(xs, ys, zs, color="white", s=10, depthshade=False)
 
         def update_plot(_):
             try:
