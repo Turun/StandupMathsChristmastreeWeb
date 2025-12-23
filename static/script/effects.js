@@ -1,17 +1,20 @@
 export function blink() {
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "efffects/blink", false);
+    xhr.open("POST", "effects/blink", false);
+    xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send();
 }
 
 export function planes() {
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "efffects/planes", false);
+    xhr.open("POST", "effects/planes", false);
+    xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send();
 }
 
 export function stop() {
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "efffects/stop", false);
+    xhr.open("POST", "effects/stop", false);
+    xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send();
 }
