@@ -1,5 +1,6 @@
 import {start_capturing, is_led_on, compute_lock_in_image_data_array} from "./capture_unidirectional.js";
 import { merge_and_transmit } from "./merge_directions.js";
+import {blink, planes, stop} from "./effects.js";
 
 let current_led_index = 0;
 
@@ -248,6 +249,7 @@ export function setup_ui(
     led_positions_normalized,
 ) {
     window.addEventListener('load', () => startCamera(video, diff_canvas, math_canvas, canvases_x.concat(canvases_y)));
+
     const startButtonX = document.getElementById('start-btn-x');
     startButtonX.addEventListener('click', async () => {
         await start_capturing(
@@ -267,6 +269,7 @@ export function setup_ui(
         document.getElementById('overview-btn-x').disabled = false;
         
     });
+
     const startButtonY = document.getElementById('start-btn-y');
     startButtonY.addEventListener('click', async () => {
         await start_capturing(
@@ -285,6 +288,7 @@ export function setup_ui(
         document.getElementById('next-led-btn-y').disabled = false;
         document.getElementById('overview-btn-y').disabled = false;
     });
+
     const transmitButton = document.getElementById('transmit-btn');
     transmitButton.addEventListener('click', () => {
         merge_and_transmit(
@@ -293,6 +297,19 @@ export function setup_ui(
             led_positions_raw_y,
             led_positions_normalized
         );
+    });
+
+    const effectBlinkButton = document.getElementById('effect-blink-btn');
+    effectBlinkButton.addEventListener('click', () => {
+         blink();
+    });
+    const effectSweepingPlanesButton = document.getElementById('effect-sweeping-plane-btn');
+    effectSweepingPlanesButton.addEventListener('click', () => {
+         planes();
+    });
+    const effectStopButton = document.getElementById('effect-stop-btn');
+    effectSweepingPlanesButton.addEventListener('click', () => {
+         stop();
     });
 
     populate_led_select(num_leds);
