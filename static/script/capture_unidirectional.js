@@ -64,13 +64,39 @@ function configure_leds(dict) {
 }
 
 // main code block, tell the pi what to do, take a picture and then move on.
-function capture_lock_in_data(num_leds, num_cycles, video, contexts){
+async function capture_lock_in_data(num_leds, num_cycles, video, contexts){
+    // wait for the next camera frame. Uses requestVideoFrameCallback when available,
+    // falls back to a requestAnimationFrame-based heuristic otherwise.
+    function waitForNextCameraFrame(video) {
+        return new Promise(resolve => {
+            // Best: browser provides requestVideoFrameCallback
+            if (typeof video.requestVideoFrameCallback === 'function') {
+                // resolve with metadata if available (timestamp, etc.)
+                video.requestVideoFrameCallback((now, metadata) => {
+                    resolve(metadata ?? { timestamp: now });
+                });
+            } else {
+                // Fallback: wait for the next couple of animation frames.
+                // Not as precise as RVFC, but better than a fixed timeout.
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        resolve({ timestamp: performance.now() });
+                    });
+                });
+            }
+        });
+    }
+    
     for (const shift of Array(num_cycles).keys()) {
         var data = {};
         for (const led_index of Array(num_leds).keys()) {
             data[led_index] = is_led_on(led_index, shift);
         }
         configure_leds(data);
+        
+        // Wait until the camera produces the next decoded frame (or fallback).
+        await waitForNextCameraFrame(video);
+
         contexts[shift].drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
     }
 }
@@ -202,7 +228,7 @@ function analyze_lock_in_data(num_leds, num_cycles, math_canvas, contexts, led_p
 }
 
 
-export function start_capturing(
+export async function start_capturing(
     num_leds,
     num_cycles,
     video,
@@ -214,13 +240,15 @@ export function start_capturing(
 ){
     console.log("starting...");
     console.log("generating lock in data...");
-    capture_lock_in_data(num_leds, num_cycles, video, contexts);
+    await capture_lock_in_data(num_leds, num_cycles, video, contexts);
     console.log("converting images to greyscale...");
     convert_to_greyscale(contexts);
     console.log("bluring images...");
     blur_images(contexts);
     console.log("analyzing lock in data...");
     analyze_lock_in_data(num_leds, num_cycles, math_canvas, contexts, led_positions_raw);
+    console.log("Fix LED positions which are unrealistic...")
+    // TODO
     console.log("visualizing LED positions...");
     visualize_led_positions(
         diff_context,
