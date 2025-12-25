@@ -1,6 +1,6 @@
 import {start_capturing, is_led_on, compute_lock_in_image_data_array} from "./capture_unidirectional.js";
 import { merge_and_transmit } from "./merge_directions.js";
-import {blink, allOn, stop} from "./effects.js";
+import {blink, allOn, stop, setBaseColor} from "./effects.js";
 
 let current_led_index = 0;
 
@@ -310,6 +310,11 @@ export function setup_ui(
     const effectStopButton = document.getElementById('effect-stop-btn');
     effectStopButton.addEventListener('click', () => {
          stop();
+    });
+    const colorPicker = document.getElementById('base-color-picker');
+    colorPicker.addEventListener('input', (event) => {
+        const hexColor = event.target.value;
+        setBaseColor(hexColor);
     });
 
     populate_led_select(num_leds);
