@@ -18,6 +18,22 @@ function test_is_led_on(max_led_index, max_cycle)  {
     }
 }
 
+/**
+ * Ensures the function 'func' is called at most once every 'limit' milliseconds.
+ */
+function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+        const args = arguments;
+        const context = this;
+        if (!inThrottle) {
+            func.apply(context, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    }
+}
+
 // populate the LED dropdown after analyzing
 function populate_led_select(num_leds) {
     const select = document.getElementById('led-select');
@@ -312,9 +328,12 @@ export function setup_ui(
          stop();
     });
     const colorPicker = document.getElementById('base-color-picker');
+    const throttledSetColor = throttle((hex) => {
+        setBaseColor(hex);
+    }, 100); 
     colorPicker.addEventListener('input', (event) => {
         const hexColor = event.target.value;
-        setBaseColor(hexColor);
+        throttledSetColor(hexColor);
     });
 
     populate_led_select(num_leds);
