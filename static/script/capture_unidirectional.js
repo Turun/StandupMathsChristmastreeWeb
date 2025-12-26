@@ -79,9 +79,7 @@ function blur_array(srcData, width, height, half_kernel_size = 4) {
  */
 export async function start_capturing(
     num_leds,
-    num_cycles,
     video,
-    contexts,
     math_canvas,
     diff_canvas,
     diff_context,
