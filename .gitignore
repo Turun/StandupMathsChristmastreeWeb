@@ -9,3 +9,6 @@ OG_Videos/
 
 # Virtual environments
 .venv
+
+# the rust build dir
+new_fake_leds/target/
