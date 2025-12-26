@@ -1,17 +1,23 @@
+use crate::state::{AppState, Effect, Vec3};
 use axum::{
     extract::State,
+    http::{header, Response},
+    response::IntoResponse,
     routing::{get, post},
     Json, Router,
 };
 use parking_lot::Mutex;
 use serde_json::Value;
-use std::{net::SocketAddr, sync::Arc};
+use std::{fs, sync::Arc};
 
-use crate::state::{AppState, Effect, Vec3};
+fn file_response(path: &str, mime: &str) -> Response<axum::body::Body> {
+    let contents = fs::read_to_string(path).unwrap_or_else(|_| String::new());
+    ([(header::CONTENT_TYPE, mime)], contents).into_response()
+}
 
 pub async fn serve(state: Arc<Mutex<AppState>>) {
-    // Build the router with all your endpoints
     let app = Router::new()
+        // API routes
         .route("/configure_leds", post(configure_leds))
         .route("/set_num_leds", post(set_num_leds))
         .route("/get_num_leds", get(get_num_leds))
@@ -20,13 +26,57 @@ pub async fn serve(state: Arc<Mutex<AppState>>) {
         .route("/effects/blink", post(start_blink))
         .route("/effects/allon", post(start_allon))
         .route("/effects/stop", post(stop_effects))
+        // HTML
+        .route(
+            "/",
+            get(|| async { file_response("../templates/index.html", "text/html") }),
+        )
+        // CSS
+        .route(
+            "/static/style.css",
+            get(|| async { file_response("../static/style.css", "text/css") }),
+        )
+        // JS
+        .route(
+            "/static/script/main.js",
+            get(|| async { file_response("../static/script/main.js", "application/javascript") }),
+        )
+        .route(
+            "/static/script/ui.js",
+            get(|| async { file_response("../static/script/ui.js", "application/javascript") }),
+        )
+        .route(
+            "/static/script/merge_directions.js",
+            get(|| async {
+                file_response(
+                    "../static/script/merge_directions.js",
+                    "application/javascript",
+                )
+            }),
+        )
+        .route(
+            "/static/script/capture_unidirectional.js",
+            get(|| async {
+                file_response(
+                    "../static/script/capture_unidirectional.js",
+                    "application/javascript",
+                )
+            }),
+        )
+        .route(
+            "/static/script/effects.js",
+            get(|| async {
+                file_response("../static/script/effects.js", "application/javascript")
+            }),
+        )
         .with_state(state);
 
-    // Bind the TCP listener
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080")
+        .await
+        .expect("Failed to bind to port 8080");
+
     println!("Web server listening on http://0.0.0.0:8080");
 
-    // Run the server using the new Axum style
     axum::serve(listener, app).await.unwrap();
 }
 

@@ -23,31 +23,37 @@ pub enum Effect {
     AllOn,
 }
 
+#[derive(Clone)]
 pub struct AppState {
     pub leds: Vec<Led>,
     pub base_color: Color32,
 
     pub effect: Effect,
     pub effect_start: Instant,
+
+    // Rotation angles in radians
+    pub rotation_x: f32,
+    pub rotation_y: f32,
 }
 
 impl AppState {
     pub fn new(num: usize) -> Self {
+        let mut leds = Vec::with_capacity(num);
+        for pos in super::generate_cone_leds(num) {
+            leds.push(super::state::Led {
+                enabled: false,
+                color: egui::Color32::BLACK,
+                position: pos,
+            });
+        }
+
         Self {
-            leds: (0..num)
-                .map(|_| Led {
-                    enabled: false,
-                    color: Color32::BLACK,
-                    position: Vec3 {
-                        x: 0.0,
-                        y: 0.0,
-                        z: 0.0,
-                    },
-                })
-                .collect(),
-            base_color: Color32::from_rgb(50, 50, 50),
+            leds,
+            base_color: egui::Color32::from_rgb(50, 50, 50),
             effect: Effect::None,
-            effect_start: Instant::now(),
+            effect_start: std::time::Instant::now(),
+            rotation_x: 0.0,
+            rotation_y: 0.0,
         }
     }
 }
