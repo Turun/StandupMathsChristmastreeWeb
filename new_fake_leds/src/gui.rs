@@ -6,6 +6,7 @@ use std::sync::Arc;
 pub struct LedApp {
     state: Arc<Mutex<AppState>>,
     last_drag: Option<egui::Pos2>,
+    last_pan: Option<egui::Pos2>,
 }
 
 impl LedApp {
@@ -13,6 +14,7 @@ impl LedApp {
         Self {
             state,
             last_drag: None,
+            last_pan: None,
         }
     }
 }
@@ -22,15 +24,15 @@ impl eframe::App for LedApp {
         let mut state = self.state.lock();
         update_effects(&mut state);
 
-        // Handle mouse drag for rotation
         let pointer = ctx.input(|i| i.pointer.clone());
+
+        // --- Rotation with left mouse ---
         if let Some(pos) = pointer.interact_pos() {
             if pointer.primary_down() {
                 if let Some(last) = self.last_drag {
                     let delta = pos - last;
                     state.rotation_y += delta.x * 0.01; // yaw
                     state.rotation_x += delta.y * 0.01; // pitch
-                                                        // clamp pitch to avoid flipping
                     state.rotation_x = state
                         .rotation_x
                         .clamp(-std::f32::consts::FRAC_PI_2, std::f32::consts::FRAC_PI_2);
@@ -38,6 +40,20 @@ impl eframe::App for LedApp {
                 self.last_drag = Some(pos);
             } else {
                 self.last_drag = None;
+            }
+        }
+
+        // --- Pan/drag with middle mouse ---
+        if let Some(pos) = pointer.interact_pos() {
+            if pointer.middle_down() {
+                if let Some(last) = self.last_pan {
+                    let delta = pos - last;
+                    state.offset_x += delta.x;
+                    state.offset_y += delta.y;
+                }
+                self.last_pan = Some(pos);
+            } else {
+                self.last_pan = None;
             }
         }
 
@@ -49,8 +65,8 @@ impl eframe::App for LedApp {
             for led in &state.leds {
                 let rotated = rotate_point(led.position, state.rotation_x, state.rotation_y);
                 let p = Pos2 {
-                    x: center.x + rotated.x * 200.0,
-                    y: center.y - rotated.y * 200.0,
+                    x: center.x + rotated.x * 200.0 + state.offset_x,
+                    y: center.y - rotated.y * 200.0 + state.offset_y,
                 };
                 ui.painter().circle_filled(
                     p,

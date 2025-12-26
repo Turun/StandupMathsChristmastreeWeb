@@ -31,9 +31,10 @@ pub struct AppState {
     pub effect: Effect,
     pub effect_start: Instant,
 
-    // Rotation angles in radians
     pub rotation_x: f32,
     pub rotation_y: f32,
+    pub offset_x: f32,
+    pub offset_y: f32,
 }
 
 impl AppState {
@@ -54,6 +55,8 @@ impl AppState {
             effect_start: std::time::Instant::now(),
             rotation_x: 0.0,
             rotation_y: 0.0,
+            offset_x: 0.0,
+            offset_y: 0.0,
         }
     }
 }
