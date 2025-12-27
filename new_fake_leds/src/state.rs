@@ -50,7 +50,7 @@ impl AppState {
 
         Self {
             leds,
-            base_color: egui::Color32::from_rgb(50, 50, 50),
+            base_color: egui::Color32::from_rgb(150, 150, 150),
             effect: Effect::None,
             effect_start: std::time::Instant::now(),
             rotation_x: 0.0,

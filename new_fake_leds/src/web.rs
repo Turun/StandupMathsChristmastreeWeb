@@ -89,9 +89,15 @@ async fn configure_leds(
 ) -> impl IntoResponse {
     debug!("configure_leds {body:?}");
     let mut s = state.lock();
+    for led in s.leds.iter_mut() {
+        led.color = Color32::from_rgb(0, 0, 0);
+    }
     for (k, v) in body.as_object().unwrap() {
         let idx: usize = k.parse().unwrap();
-        s.leds[idx].enabled = v.as_bool().unwrap();
+        let val = v.as_bool().unwrap();
+        if val {
+            s.leds[idx].color = s.base_color;
+        } // if val is false, turn the LED off, but that has already happened
     }
     return (StatusCode::OK, "success");
 }

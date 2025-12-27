@@ -6,7 +6,6 @@ mod web;
 use crate::state::Vec3;
 use gui::LedApp;
 use parking_lot::Mutex;
-use rand::Rng;
 use state::AppState;
 use std::sync::Arc;
 use tracing_subscriber::{fmt, EnvFilter};
@@ -14,18 +13,18 @@ use tracing_subscriber::{fmt, EnvFilter};
 /// Generates `num_leds` points in a cone.
 /// Base: square from -1..1 in x/y, height z: 0..2.5
 pub fn generate_cone_leds(num_leds: usize) -> Vec<Vec3> {
-    let mut rng = rand::thread_rng();
     let mut leds = Vec::with_capacity(num_leds);
 
-    for _ in 0..num_leds {
-        let z: f32 = rng.gen_range(0.0..2.5);
+    while leds.len() < num_leds {
+        let z: f32 = rand::random_range(0.0..2.5);
+        let x: f32 = rand::random_range(-1.0..1.0);
+        let y: f32 = rand::random_range(-1.0..1.0);
 
-        // scale base radius with height so it tapers
-        let scale = 1.0 - (z / 2.5);
-        let x: f32 = rng.gen_range(-1.0..1.0) * scale;
-        let y: f32 = rng.gen_range(-1.0..1.0) * scale;
-
-        leds.push(Vec3 { x, y, z });
+        let radius = (x * x + y * y).sqrt();
+        let max_allowed_radius = 1.0 - (z / 2.5);
+        if radius < max_allowed_radius {
+            leds.push(Vec3 { x, y, z });
+        }
     }
 
     leds
