@@ -1,6 +1,5 @@
 use crate::state::{AppState, Effect};
 use egui::Color32;
-use std::time::Duration;
 
 pub fn update_effects(state: &mut AppState) {
     match state.effect {

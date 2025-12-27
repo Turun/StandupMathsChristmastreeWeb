@@ -9,6 +9,7 @@ use parking_lot::Mutex;
 use rand::Rng;
 use state::AppState;
 use std::sync::Arc;
+use tracing_subscriber::{fmt, EnvFilter};
 
 /// Generates `num_leds` points in a cone.
 /// Base: square from -1..1 in x/y, height z: 0..2.5
@@ -51,6 +52,11 @@ pub fn rotate_point(p: Vec3, rot_x: f32, rot_y: f32) -> Vec3 {
 }
 
 fn main() {
+    let filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("warn,led_sim=trace"));
+
+    fmt().with_env_filter(filter).init();
+
     let state = Arc::new(Mutex::new(AppState::new(500)));
 
     // web server

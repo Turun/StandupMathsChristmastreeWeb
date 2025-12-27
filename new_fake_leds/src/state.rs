@@ -42,7 +42,7 @@ impl AppState {
         let mut leds = Vec::with_capacity(num);
         for pos in super::generate_cone_leds(num) {
             leds.push(super::state::Led {
-                enabled: false,
+                enabled: true,
                 color: egui::Color32::BLACK,
                 position: pos,
             });

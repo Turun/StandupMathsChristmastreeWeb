@@ -1,7 +1,7 @@
 use crate::{effects::update_effects, rotate_point, state::AppState};
 use egui::{Color32, Pos2};
 use parking_lot::Mutex;
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 pub struct LedApp {
     state: Arc<Mutex<AppState>>,
@@ -80,6 +80,6 @@ impl eframe::App for LedApp {
             }
         });
 
-        ctx.request_repaint();
+        ctx.request_repaint_after(Duration::from_millis(25));
     }
 }
