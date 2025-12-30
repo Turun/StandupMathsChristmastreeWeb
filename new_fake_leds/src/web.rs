@@ -199,7 +199,7 @@ async fn unmask_led(
 async fn unmask_all(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResponse {
     debug!("unmask all");
     let mut s = state.lock();
-    s.leds.iter_mut().map(|l| l.enabled = true);
+    s.leds.iter_mut().for_each(|l| l.enabled = true);
     return (StatusCode::OK, "success");
 }
 
