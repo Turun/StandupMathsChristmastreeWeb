@@ -56,7 +56,7 @@ fn main() {
 
     fmt().with_env_filter(filter).init();
 
-    let state = Arc::new(Mutex::new(AppState::new(500)));
+    let state = Arc::new(Mutex::new(AppState::new(50)));
 
     // web server
     {

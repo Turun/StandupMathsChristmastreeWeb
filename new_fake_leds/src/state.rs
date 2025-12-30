@@ -53,7 +53,7 @@ impl AppState {
             base_color: egui::Color32::from_rgb(150, 150, 150),
             effect: Effect::None,
             effect_start: std::time::Instant::now(),
-            rotation_x: 0.0,
+            rotation_x: -std::f32::consts::FRAC_PI_2,
             rotation_y: 0.0,
             offset_x: 0.0,
             offset_y: 0.0,

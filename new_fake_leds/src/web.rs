@@ -9,7 +9,7 @@ use axum::{
 use egui::Color32;
 use parking_lot::Mutex;
 use serde_json::Value;
-use std::{fs, sync::Arc};
+use std::{fs, sync::Arc, thread, time::Duration};
 use tracing::debug;
 
 fn file_response(path: &str, mime: &str) -> Response<axum::body::Body> {
@@ -99,6 +99,8 @@ async fn configure_leds(
             s.leds[idx].color = s.base_color;
         } // if val is false, turn the LED off, but that has already happened
     }
+    // TODO: wait until screen refreshed
+    thread::sleep(Duration::from_millis(100));
     return (StatusCode::OK, "success");
 }
 
@@ -181,5 +183,8 @@ async fn stop_effects(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoRes
     debug!("stop_effects");
     let mut s = state.lock();
     s.effect = Effect::None;
+    for led in s.leds.iter_mut() {
+        led.color = Color32::from_rgb(0, 0, 0);
+    }
     return (StatusCode::OK, "effects stopped");
 }
