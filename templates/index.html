@@ -122,9 +122,16 @@
 
     /* Common controls section */
     .common-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
       padding-bottom: 15px;
       border-bottom: 2px solid #e0e0e0;
       margin-bottom: 10px;
+    }
+
+    .common-controls.hidden {
+      display: none;
     }
 
     /* Buttons */
@@ -240,15 +247,15 @@
       <div class="controls-container">
         <!-- Tab Navigation -->
         <div class="tab-nav">
-          <button class="tab-btn active" data-tab="x-coords">X Coords</button>
-          <button class="tab-btn" data-tab="y-coords">Y Coords</button>
-          <button class="tab-btn" data-tab="effects">Effects</button>
+          <button class="tab-btn active" data-tab="x-coords" id="nav-tab-x">X Coords</button>
+          <button class="tab-btn" data-tab="y-coords" id="nav-tab-y">Y Coords</button>
+          <button class="tab-btn" data-tab="effects" id="nav-tab-effects">Effects</button>
         </div>
 
         <!-- Tab Content -->
         <div class="tab-content">
-          <!-- Common Controls (shown in all tabs) -->
-          <div class="common-controls">
+          <!-- Common Controls (shown in X and Y tabs only) -->
+          <div class="common-controls" id="common-controls">
             <label for="led-select">Select LED:</label>
             <div class="btn-group">
               <button id="btn-dec">&lt;</button>
@@ -256,34 +263,34 @@
               <button id="btn-inc">&gt;</button>
             </div>
             <button id="light-up-led-btn">Light up LED</button>
+            <button id="effect-all-on-btn">All On</button>
             <div class="btn-group">
               <button id="mask-led-btn">Mask</button>
               <button id="unmask-led-btn">Unmask</button>
             </div>
             <button id="unmask-all-btn" class="action-btn">Unmask All</button>
+            <button id="transmit-btn" class="action-btn">Transmit 3D pos</button>
           </div>
 
           <!-- X Coordinates Tab -->
           <div class="tab-panel active" id="x-coords">
-            <button id="start-btn-x" class="action-btn">Capture X Coords</button>
-            <button id="center-led-position-in-x-btn">Fix Position in X</button>
+            <button id="start-btn-x">Capture X Coords</button>
+            <button id="center-led-position-in-x-btn" class="action-btn">Fix Position in X</button>
             <button disabled id="overview-btn-x">Show Overview X</button>
-            <button id="transmit-btn" class="action-btn">Transmit 3D pos</button>
           </div>
 
           <!-- Y Coordinates Tab -->
           <div class="tab-panel" id="y-coords">
-            <button id="start-btn-y" class="action-btn">Capture Y Coords</button>
-            <button id="center-led-position-in-y-btn">Fix Position in Y</button>
+            <button id="start-btn-y">Capture Y Coords</button>
+            <button id="center-led-position-in-y-btn" class="action-btn">Fix Position in Y</button>
             <button disabled id="overview-btn-y">Show Overview Y</button>
-            <button id="transmit-btn-y" class="action-btn">Transmit 3D pos</button>
           </div>
 
           <!-- Effects Tab -->
           <div class="tab-panel" id="effects">
             <div class="btn-group">
               <button id="effect-blink-btn" class="blue-btn">Blink</button>
-              <button id="effect-all-on-btn" class="blue-btn">All On</button>
+              <button id="effect-all-on-btn2" class="blue-btn">All On</button>
               <div class="color-picker-wrapper">
                 <input type="color" id="base-color-picker" value="#ffffff" title="Set LED Color">
               </div>
@@ -307,6 +314,8 @@
 
   <script>
     // Tab switching functionality
+    const commonControls = document.getElementById('common-controls');
+
     document.querySelectorAll('.tab-btn').forEach(button => {
       button.addEventListener('click', () => {
         const tabName = button.getAttribute('data-tab');
@@ -318,6 +327,13 @@
         // Add active class to clicked button and corresponding panel
         button.classList.add('active');
         document.getElementById(tabName).classList.add('active');
+
+        // Show/hide common controls based on active tab
+        if (tabName === 'effects') {
+          commonControls.classList.add('hidden');
+        } else {
+          commonControls.classList.remove('hidden');
+        }
       });
     });
   </script>

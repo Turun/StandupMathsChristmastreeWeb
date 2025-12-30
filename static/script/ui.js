@@ -125,6 +125,24 @@ function getVideoCoords(e, video) {
     };
 }
 
+// Helper functions to check which tab is active (for your main.js)
+function getActiveTab() {
+  const activePanel = document.querySelector('.tab-panel.active');
+  return activePanel ? activePanel.id : null;
+}
+
+function isTabXActive() {
+  return getActiveTab() === 'x-coords';
+}
+
+function isTabYActive() {
+  return getActiveTab() === 'y-coords';
+}
+
+function isTabEffectsActive() {
+  return getActiveTab() === 'effects';
+}
+
 export function setup_ui(
     num_leds,
     video,
@@ -136,12 +154,27 @@ export function setup_ui(
     led_positions_normalized,
 ) {
     window.addEventListener('load', () => startCamera(video, diff_canvas, math_canvas));
-    // video.addEventListener('click', (e) => {
-    //     // get the pixel that was clicked
-    //       const coords = getVideoCoords(e, video);
-    //       if (!coords) return;
-    //       console.log(coords.x, coords.y);
-    // });
+    video.addEventListener('click', (e) => {
+        // get the pixel that was clicked
+        const coords = getVideoCoords(e, video);
+        if (!coords) return;
+
+        if (isTabXActive()) {
+            led_positions_raw_x[current_led_index] = [coords.x, coords.y];
+            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x);
+        } else if (isTabYActive()) {
+            led_positions_raw_y[current_led_index] = [coords.x, coords.y];
+            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
+        }
+    });
+    const navTabX = document.getElementById('nav-tab-x');
+    navTabX.addEventListener('click', async () => {
+        visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x);
+    });
+    const navTabY = document.getElementById('nav-tab-y');
+    navTabY.addEventListener('click', async () => {
+        visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
+    });
 
     const startButtonX = document.getElementById('start-btn-x');
     startButtonX.addEventListener('click', async () => {
@@ -190,11 +223,21 @@ export function setup_ui(
     decrementButton.addEventListener('click', async () => {
         current_led_index = (current_led_index + num_leds - 1) % num_leds;
         select.value = current_led_index;
+        if (isTabXActive()) {    
+            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x);
+        } else if (isTabYActive()) {
+            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
+        }
     });
     const incrementButton = document.getElementById('btn-inc');
     incrementButton.addEventListener('click', async () => {
         current_led_index = (current_led_index + 1) % num_leds;
         select.value = current_led_index;
+        if (isTabXActive()) {    
+            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x);
+        } else if (isTabYActive()) {
+            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
+        }
     });
     const centerLEDPositionXButton = document.getElementById('center-led-position-in-x-btn');
     centerLEDPositionXButton.addEventListener('click', async () => {
@@ -261,6 +304,11 @@ export function setup_ui(
     });
     const effectAllOnButton = document.getElementById('effect-all-on-btn');
     effectAllOnButton.addEventListener('click', () => {
+        setBaseColor(colorPicker.value);
+        allOn();
+    });
+    const effectAllOnButton2 = document.getElementById('effect-all-on-btn2');
+    effectAllOnButton2.addEventListener('click', () => {
         setBaseColor(colorPicker.value);
         allOn();
     });
