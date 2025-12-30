@@ -26,6 +26,7 @@ pub enum Effect {
     SweepingPlaneX,
     SweepingPlaneY,
     SweepingPlaneZ,
+    ConcentricColor,
 }
 
 #[derive(Clone)]
@@ -41,6 +42,7 @@ pub struct AppState {
     // sweeping plane state
     pub sweeping_plane_z: Vec<f32>,
     pub sweeping_plane_hue: f32,
+    pub concentric_color_hue: f32,
 
     pub rotation_x: f32,
     pub rotation_y: f32,
@@ -72,6 +74,7 @@ impl AppState {
             effect_start: std::time::Instant::now(),
             sweeping_plane_z: Vec::new(),
             sweeping_plane_hue: 0.0,
+            concentric_color_hue: 0.0,
             rotation_x: -std::f32::consts::FRAC_PI_2,
             rotation_y: 0.0,
             offset_x: 0.0,

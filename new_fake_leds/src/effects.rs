@@ -20,6 +20,7 @@ pub fn update_effects(state: &mut AppState) {
         Effect::SweepingPlaneX | Effect::SweepingPlaneY | Effect::SweepingPlaneZ => {
             sweeping_plane_xyz(state)
         }
+        Effect::ConcentricColor => concentric_color(state),
         Effect::None => {}
     }
 }
@@ -71,7 +72,7 @@ fn sweeping_plane(state: &mut AppState) {
     let elapsed_ms = state.effect_start.elapsed().as_millis() as f32;
 
     // color
-    let color = hsv_to_rgb(state.sweeping_plane_hue, 0.40, 0.20);
+    let color = hsv_to_rgb(state.sweeping_plane_hue, 1.00, 0.30);
 
     // initialize z positions on first run
     if state.sweeping_plane_z.len() != state.leds.len() {
@@ -114,12 +115,12 @@ fn sweeping_plane_xyz(state: &mut AppState) {
         for led in &state.leds {
             let p = led.determined_position;
             let z = match state.effect {
-                Effect::None | Effect::Blink | Effect::AllOn | Effect::SweepingPlane => {
-                    unreachable!()
-                }
                 Effect::SweepingPlaneX => p.x,
                 Effect::SweepingPlaneY => p.y,
                 Effect::SweepingPlaneZ => p.z,
+                _ => {
+                    unreachable!()
+                }
             };
             min_z = min_z.min(z);
             state.sweeping_plane_z.push(z);
@@ -161,5 +162,43 @@ fn sweeping_plane_xyz(state: &mut AppState) {
     // reset when finished
     if &&plane_z > max_z {
         reset_sweeping_plane_xyz(state);
+    }
+}
+
+fn concentric_color(state: &mut AppState) {
+    let elapsed_ms = state.effect_start.elapsed().as_millis() as f32;
+
+    let sum_z: f32 = state.leds.iter().map(|l| l.determined_position.z).sum();
+    let count = state.leds.iter().filter(|l| l.enabled).count();
+    let center_z: f32 = sum_z / count as f32;
+
+    // calculate color
+    let color = hsv_to_rgb(state.concentric_color_hue, 1.0, 0.30);
+
+    let speed_in_units_per_ms = 0.001;
+
+    let radius_reached = elapsed_ms * speed_in_units_per_ms;
+    let radius_reached_squared = radius_reached * radius_reached;
+    let mut max_radius_squared = 0.0;
+
+    for led in &mut state.leds {
+        if !led.enabled {
+            continue;
+        }
+        let this_radius_squared = led.determined_position.x.powi(2)
+            + led.determined_position.y.powi(2)
+            + (led.determined_position.z - center_z).powi(2);
+        if this_radius_squared < radius_reached_squared {
+            led.color = color;
+        }
+        if this_radius_squared > max_radius_squared {
+            max_radius_squared = this_radius_squared;
+        }
+    }
+
+    // if this color covers all, reset with new color
+    if radius_reached > max_radius_squared {
+        state.concentric_color_hue = rand::random_range(0.0..360.0);
+        state.effect_start = Instant::now();
     }
 }

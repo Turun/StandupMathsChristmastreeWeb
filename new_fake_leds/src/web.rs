@@ -35,6 +35,7 @@ pub async fn serve(state: Arc<Mutex<AppState>>) {
         .route("/effects/planex", post(start_sweeping_plane_x))
         .route("/effects/planey", post(start_sweeping_plane_y))
         .route("/effects/planez", post(start_sweeping_plane_z))
+        .route("/effects/concentriccolor", post(start_concentric_color))
         .route("/effects/stop", post(stop_effects))
         // HTML
         .route(
@@ -261,6 +262,13 @@ async fn start_sweeping_plane_z(State(state): State<Arc<Mutex<AppState>>>) -> im
     let mut s = state.lock();
     s.sweeping_plane_z = Vec::new();
     s.effect = Effect::SweepingPlaneZ;
+    return (StatusCode::OK, "sweeping plane effect started");
+}
+
+async fn start_concentric_color(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResponse {
+    debug!("start_concentric_color");
+    let mut s = state.lock();
+    s.effect = Effect::ConcentricColor;
     return (StatusCode::OK, "sweeping plane effect started");
 }
 
