@@ -51,11 +51,13 @@ export function visualize_led_positions(
     }
 
     // and the currently selected LED in blue
-    const [x, y] = led_positions_raw[current_led_index];
-    ctx.fillStyle = 'blue';
-    ctx.beginPath();
-    ctx.arc(x, y, 7, 0, 2 * Math.PI);
-    ctx.fill();
+    if (led_positions_raw[current_led_index] != undefined) {
+        const [x, y] = led_positions_raw[current_led_index];
+        ctx.fillStyle = 'blue';
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, 2 * Math.PI);
+        ctx.fill();
+    }
 }
 
 
@@ -139,8 +141,14 @@ function isTabYActive() {
   return getActiveTab() === 'y-coords';
 }
 
-function isTabEffectsActive() {
-  return getActiveTab() === 'effects';
+function current_led_changed() {
+    stop();
+    configure_leds({[current_led_index]: true});
+    if (isTabXActive()) {    
+        visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x);
+    } else if (isTabYActive()) {
+        visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
+    }
 }
 
 export function setup_ui(
@@ -210,6 +218,7 @@ export function setup_ui(
     // keep dropdown in sync if the user manually changes it
     select.addEventListener('change', () => {
         current_led_index = parseInt(select.value);
+        current_led_changed();
     });
     select.innerHTML = '';
     for (let i = 0; i < num_leds; i++) {
@@ -223,21 +232,13 @@ export function setup_ui(
     decrementButton.addEventListener('click', async () => {
         current_led_index = (current_led_index + num_leds - 1) % num_leds;
         select.value = current_led_index;
-        if (isTabXActive()) {    
-            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x);
-        } else if (isTabYActive()) {
-            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
-        }
+        current_led_changed();
     });
     const incrementButton = document.getElementById('btn-inc');
     incrementButton.addEventListener('click', async () => {
         current_led_index = (current_led_index + 1) % num_leds;
         select.value = current_led_index;
-        if (isTabXActive()) {    
-            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x);
-        } else if (isTabYActive()) {
-            visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
-        }
+        current_led_changed();
     });
     const centerLEDPositionXButton = document.getElementById('center-led-position-in-x-btn');
     centerLEDPositionXButton.addEventListener('click', async () => {
@@ -248,11 +249,6 @@ export function setup_ui(
     centerLEDPositionYButton.addEventListener('click', async () => {
         centerLEDBetweenNeighbors(current_led_index, num_leds,  led_positions_raw_y);
         visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
-    });
-    const lightUpLEDButton = document.getElementById('light-up-led-btn');
-    lightUpLEDButton.addEventListener('click', async () => {
-        stop();
-        configure_leds({[current_led_index]: true});
     });
 
     const maskLEDButton = document.getElementById('mask-led-btn');
@@ -266,17 +262,6 @@ export function setup_ui(
     const unmaskAllButton = document.getElementById('unmask-all-btn');
     unmaskAllButton.addEventListener('click', async () => {
         unmaskAll();
-    });
-
-    // button for showing X view
-    const overviewBtnX = document.getElementById('overview-btn-x');
-    overviewBtnX.addEventListener('click', () => {
-        visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x); // show all LEDs
-    });
-    // button for showing Y view
-    const overviewBtnY = document.getElementById('overview-btn-y');
-    overviewBtnY.addEventListener('click', () => {
-        visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y); // show all LEDs
     });
 
     const transmitButton = document.getElementById('transmit-btn');
