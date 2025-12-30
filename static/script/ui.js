@@ -32,8 +32,8 @@ export function visualize_led_positions(
     ctx.fillStyle = 'red';
     ctx.strokeStyle = 'red';
     ctx.font = '12px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
     for (let i = 0; i < led_positions_raw.length; i++) {
         const [x, y] = led_positions_raw[i];
@@ -42,12 +42,12 @@ export function visualize_led_positions(
         // draw small red circle
         ctx.fillStyle = 'red';
         ctx.beginPath();
-        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.arc(x, y, 7, 0, 2 * Math.PI);
         ctx.fill();
 
         // draw LED number
         ctx.fillStyle = 'black';
-        ctx.fillText(i, x + 6, y - 6);
+        ctx.fillText(i, x, y);
     }
 }
 
