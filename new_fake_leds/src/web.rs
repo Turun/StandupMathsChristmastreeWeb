@@ -10,7 +10,7 @@ use egui::Color32;
 use parking_lot::Mutex;
 use serde_json::Value;
 use std::{fs, sync::Arc, thread, time::Duration};
-use tracing::debug;
+use tracing::{debug, info};
 
 fn file_response(path: &str, mime: &str) -> Response<axum::body::Body> {
     let contents = fs::read_to_string(path).unwrap_or_else(|_| String::new());
@@ -99,8 +99,21 @@ async fn configure_leds(
             s.leds[idx].color = s.base_color;
         } // if val is false, turn the LED off, but that has already happened
     }
-    // TODO: wait until screen refreshed
-    thread::sleep(Duration::from_millis(100));
+    drop(s); // otherwise the gui can't refresh before this method returns
+
+    // wait until screen refreshed
+    let s = state.lock();
+    let opt_context = s.egui_context.clone();
+    drop(s); // free mutex again
+    if let Some(ctx) = opt_context {
+        let frame_num = ctx.cumulative_frame_nr();
+        while ctx.cumulative_frame_nr() <= frame_num + 2 {
+            thread::sleep(Duration::from_millis(10));
+        }
+    } else {
+        thread::sleep(Duration::from_millis(3000));
+    }
+
     return (StatusCode::OK, "success");
 }
 

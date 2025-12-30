@@ -73,7 +73,7 @@ fn main() {
     eframe::run_native(
         "LED Strip Simulator",
         eframe::NativeOptions::default(),
-        Box::new(|_| Box::new(app)),
+        Box::new(|_| Ok(Box::new(app))),
     )
     .unwrap();
 }

@@ -1,4 +1,4 @@
-use egui::Color32;
+use egui::{Color32, Context};
 use serde::{Deserialize, Serialize};
 use std::time::Instant;
 
@@ -25,6 +25,8 @@ pub enum Effect {
 
 #[derive(Clone)]
 pub struct AppState {
+    pub egui_context: Option<Context>,
+
     pub leds: Vec<Led>,
     pub base_color: Color32,
 
@@ -49,6 +51,7 @@ impl AppState {
         }
 
         Self {
+            egui_context: None,
             leds,
             base_color: egui::Color32::from_rgb(150, 150, 150),
             effect: Effect::None,

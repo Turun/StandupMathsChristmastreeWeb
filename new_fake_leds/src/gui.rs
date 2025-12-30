@@ -1,7 +1,7 @@
 use crate::{effects::update_effects, rotate_point, state::AppState};
 use egui::{Color32, Pos2};
 use parking_lot::Mutex;
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 pub struct LedApp {
     state: Arc<Mutex<AppState>>,
@@ -23,6 +23,10 @@ impl eframe::App for LedApp {
     fn update(&mut self, ctx: &egui::Context, _: &mut eframe::Frame) {
         let mut state = self.state.lock();
         update_effects(&mut state);
+
+        if state.egui_context.is_none() {
+            state.egui_context = Some(ctx.clone());
+        }
 
         let pointer = ctx.input(|i| i.pointer.clone());
 
@@ -74,6 +78,6 @@ impl eframe::App for LedApp {
             }
         });
 
-        ctx.request_repaint();
+        ctx.request_repaint_after(Duration::from_millis(100));
     }
 }
