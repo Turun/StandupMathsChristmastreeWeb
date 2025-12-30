@@ -23,6 +23,9 @@ pub enum Effect {
     Blink,
     AllOn,
     SweepingPlane,
+    SweepingPlaneX,
+    SweepingPlaneY,
+    SweepingPlaneZ,
 }
 
 #[derive(Clone)]

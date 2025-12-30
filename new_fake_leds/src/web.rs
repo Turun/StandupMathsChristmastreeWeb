@@ -29,6 +29,9 @@ pub async fn serve(state: Arc<Mutex<AppState>>) {
         .route("/effects/blink", post(start_blink))
         .route("/effects/allon", post(start_allon))
         .route("/effects/sweepingplane", post(start_sweeping_plane))
+        .route("/effects/planex", post(start_sweeping_plane_x))
+        .route("/effects/planey", post(start_sweeping_plane_y))
+        .route("/effects/planez", post(start_sweeping_plane_z))
         .route("/effects/stop", post(stop_effects))
         // HTML
         .route(
@@ -200,7 +203,32 @@ async fn start_allon(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResp
 async fn start_sweeping_plane(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResponse {
     debug!("start_sweeping_plane");
     let mut s = state.lock();
+    s.sweeping_plane_z = Vec::new();
     s.effect = Effect::SweepingPlane;
+    return (StatusCode::OK, "sweeping plane effect started");
+}
+
+async fn start_sweeping_plane_x(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResponse {
+    debug!("start_sweeping_planex");
+    let mut s = state.lock();
+    s.sweeping_plane_z = Vec::new();
+    s.effect = Effect::SweepingPlaneX;
+    return (StatusCode::OK, "sweeping plane effect started");
+}
+
+async fn start_sweeping_plane_y(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResponse {
+    debug!("start_sweeping_planey");
+    let mut s = state.lock();
+    s.sweeping_plane_z = Vec::new();
+    s.effect = Effect::SweepingPlaneY;
+    return (StatusCode::OK, "sweeping plane effect started");
+}
+
+async fn start_sweeping_plane_z(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResponse {
+    debug!("start_sweeping_planez");
+    let mut s = state.lock();
+    s.sweeping_plane_z = Vec::new();
+    s.effect = Effect::SweepingPlaneZ;
     return (StatusCode::OK, "sweeping plane effect started");
 }
 

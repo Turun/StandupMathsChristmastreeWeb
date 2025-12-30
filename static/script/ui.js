@@ -1,6 +1,6 @@
 import {start_capturing} from "./capture_unidirectional.js";
 import { merge_and_transmit } from "./merge_directions.js";
-import {blink, allOn, stop, setBaseColor} from "./effects.js";
+import {blink, allOn, sweepingPlane, stop, setBaseColor, planeX, planeY, planeZ} from "./effects.js";
 
 let current_led_index = 0;
 
@@ -137,18 +137,6 @@ export function setup_ui(
         );
     });
 
-    const effectBlinkButton = document.getElementById('effect-blink-btn');
-    effectBlinkButton.addEventListener('click', () => {
-         blink();
-    });
-    const effectAllOnButton = document.getElementById('effect-all-on-btn');
-    effectAllOnButton.addEventListener('click', () => {
-         allOn();
-    });
-    const effectStopButton = document.getElementById('effect-stop-btn');
-    effectStopButton.addEventListener('click', () => {
-         stop();
-    });
     const colorPicker = document.getElementById('base-color-picker');
     const throttledSetColor = throttle((hex) => {
         setBaseColor(hex);
@@ -156,6 +144,36 @@ export function setup_ui(
     colorPicker.addEventListener('input', (event) => {
         const hexColor = event.target.value;
         throttledSetColor(hexColor);
+    });
+    const effectBlinkButton = document.getElementById('effect-blink-btn');
+    effectBlinkButton.addEventListener('click', () => {
+        setBaseColor(colorPicker.value);
+        blink();
+    });
+    const effectAllOnButton = document.getElementById('effect-all-on-btn');
+    effectAllOnButton.addEventListener('click', () => {
+        setBaseColor(colorPicker.value);
+        allOn();
+    });
+    const effectSweepingPlaneButton = document.getElementById('effect-sweeping-plane-btn');
+    effectSweepingPlaneButton.addEventListener('click', () => {
+        sweepingPlane();
+    });
+    const effectSweepingPlaneXButton = document.getElementById('effect-sweeping-plane-x-btn');
+    effectSweepingPlaneXButton.addEventListener('click', () => {
+        planeX();
+    });
+    const effectSweepingPlaneYButton = document.getElementById('effect-sweeping-plane-y-btn');
+    effectSweepingPlaneYButton.addEventListener('click', () => {
+        planeY();
+    });
+    const effectSweepingPlaneZButton = document.getElementById('effect-sweeping-plane-z-btn');
+    effectSweepingPlaneZButton.addEventListener('click', () => {
+        planeZ();
+    });
+    const effectStopButton = document.getElementById('effect-stop-btn');
+    effectStopButton.addEventListener('click', () => {
+        stop();
     });
 
     // populate led select dropdown
