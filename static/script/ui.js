@@ -1,6 +1,6 @@
 import {start_capturing} from "./capture_unidirectional.js";
-import { merge_and_transmit } from "./merge_directions.js";
-import {blink, allOn, sweepingPlane, stop, setBaseColor, maskLed, unmaskLed, unmaskAll, planeX, planeY, planeZ, concentricColor} from "./effects.js";
+import { merge_and_transmit, centerLEDBetweenNeighbors} from "./merge_directions.js";
+import {blink, allOn, sweepingPlane, stop, setBaseColor, maskLed, unmaskLed, unmaskAll, planeX, planeY, planeZ, concentricColor, configure_leds} from "./effects.js";
 
 let current_led_index = 0;
 
@@ -92,6 +92,38 @@ function startCamera(
     }
 }
 
+// get the pixel coordinates where the user clicked in the video. But like, in video source coordinates.
+function getVideoCoords(e, video) {
+    const rect = video.getBoundingClientRect();
+
+    const videoAspect = video.videoWidth / video.videoHeight;
+    const elementAspect = rect.width / rect.height;
+
+    let drawWidth, drawHeight, offsetX, offsetY;
+    if (elementAspect > videoAspect) {
+        drawHeight = rect.height;
+        drawWidth = drawHeight * videoAspect;
+        offsetX = (rect.width - drawWidth) / 2;
+        offsetY = 0;
+    } else {
+        drawWidth = rect.width;
+        drawHeight = drawWidth / videoAspect;
+        offsetX = 0;
+        offsetY = (rect.height - drawHeight) / 2;
+    }
+
+    const x = e.clientX - rect.left - offsetX;
+    const y = e.clientY - rect.top - offsetY;
+
+    if (x < 0 || y < 0 || x > drawWidth || y > drawHeight) {
+        return null; // clicked in black bars
+    }
+
+    return {
+        x: (x / drawWidth) * video.videoWidth,
+        y: (y / drawHeight) * video.videoHeight
+    };
+}
 
 export function setup_ui(
     num_leds,
@@ -104,6 +136,12 @@ export function setup_ui(
     led_positions_normalized,
 ) {
     window.addEventListener('load', () => startCamera(video, diff_canvas, math_canvas));
+    // video.addEventListener('click', (e) => {
+    //     // get the pixel that was clicked
+    //       const coords = getVideoCoords(e, video);
+    //       if (!coords) return;
+    //       console.log(coords.x, coords.y);
+    // });
 
     const startButtonX = document.getElementById('start-btn-x');
     startButtonX.addEventListener('click', async () => {
@@ -157,6 +195,21 @@ export function setup_ui(
     incrementButton.addEventListener('click', async () => {
         current_led_index = (current_led_index + 1) % num_leds;
         select.value = current_led_index;
+    });
+    const centerLEDPositionXButton = document.getElementById('center-led-position-in-x-btn');
+    centerLEDPositionXButton.addEventListener('click', async () => {
+        centerLEDBetweenNeighbors(current_led_index, num_leds, led_positions_raw_x);
+        visualize_led_positions(diff_context, diff_canvas, led_positions_raw_x);
+    });
+    const centerLEDPositionYButton = document.getElementById('center-led-position-in-y-btn');
+    centerLEDPositionYButton.addEventListener('click', async () => {
+        centerLEDBetweenNeighbors(current_led_index, num_leds,  led_positions_raw_y);
+        visualize_led_positions(diff_context, diff_canvas, led_positions_raw_y);
+    });
+    const lightUpLEDButton = document.getElementById('light-up-led-btn');
+    lightUpLEDButton.addEventListener('click', async () => {
+        stop();
+        configure_leds({[current_led_index]: true});
     });
 
     const maskLEDButton = document.getElementById('mask-led-btn');
