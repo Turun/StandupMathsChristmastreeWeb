@@ -67,7 +67,7 @@ impl eframe::App for LedApp {
             let center = rect.center();
 
             for led in &state.leds {
-                let rotated = rotate_point(led.position, state.rotation_x, state.rotation_y);
+                let rotated = rotate_point(led.actual_position, state.rotation_x, state.rotation_y);
                 let p = Pos2 {
                     x: center.x + rotated.x * 200.0 + state.offset_x,
                     y: center.y - rotated.y * 200.0 + state.offset_y,

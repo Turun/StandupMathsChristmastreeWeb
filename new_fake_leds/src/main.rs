@@ -4,6 +4,7 @@ mod state;
 mod web;
 
 use crate::state::Vec3;
+use egui::Color32;
 use gui::LedApp;
 use parking_lot::Mutex;
 use state::AppState;
@@ -48,6 +49,33 @@ pub fn rotate_point(p: Vec3, rot_x: f32, rot_y: f32) -> Vec3 {
         y: y1,
         z: z2,
     }
+}
+
+fn hsv_to_rgb(h: f32, s: f32, v: f32) -> Color32 {
+    let c = s * v;
+    let max = v;
+    let min = max - c;
+
+    let h_mod = h % 360.0;
+    let h_fraction = (h_mod % 60.0) / 60.0;
+
+    let (r, g, b) = if (0.0..60.0).contains(&h_mod) {
+        (max, min, min + h_fraction * c)
+    } else if (60.0..120.0).contains(&h_mod) {
+        (max, min + h_fraction * c, min)
+    } else if (120.0..180.0).contains(&h_mod) {
+        (min + h_fraction * c, max, min)
+    } else if (180.0..240.0).contains(&h_mod) {
+        (min, max, min + h_fraction * c)
+    } else if (240.0..300.0).contains(&h_mod) {
+        (min, min + h_fraction * c, max)
+    } else if (300.0..360.0).contains(&h_mod) {
+        (min + h_fraction * c, min, max)
+    } else {
+        (1.0, 1.0, 1.0)
+    };
+
+    return Color32::from_rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8);
 }
 
 fn main() {

@@ -10,7 +10,7 @@ use egui::Color32;
 use parking_lot::Mutex;
 use serde_json::Value;
 use std::{fs, sync::Arc, thread, time::Duration};
-use tracing::{debug, info};
+use tracing::debug;
 
 fn file_response(path: &str, mime: &str) -> Response<axum::body::Body> {
     let contents = fs::read_to_string(path).unwrap_or_else(|_| String::new());
@@ -28,6 +28,7 @@ pub async fn serve(state: Arc<Mutex<AppState>>) {
         .route("/effects/basecolor", post(set_basecolor))
         .route("/effects/blink", post(start_blink))
         .route("/effects/allon", post(start_allon))
+        .route("/effects/sweepingplane", post(start_sweeping_plane))
         .route("/effects/stop", post(stop_effects))
         // HTML
         .route(
@@ -141,7 +142,7 @@ async fn set_led_positions(
     for (k, v) in body.as_object().unwrap() {
         let idx: usize = k.parse().unwrap();
         let arr = v.as_array().unwrap();
-        s.leds[idx].position = Vec3 {
+        s.leds[idx].determined_position = Vec3 {
             x: arr[0].as_f64().unwrap() as f32,
             y: arr[1].as_f64().unwrap() as f32,
             z: arr[2].as_f64().unwrap() as f32,
@@ -157,7 +158,11 @@ async fn get_led_positions(State(state): State<Arc<Mutex<AppState>>>) -> Json<Va
     for (i, led) in s.leds.iter().enumerate() {
         obj.insert(
             i.to_string(),
-            serde_json::json!([led.position.x, led.position.y, led.position.z]),
+            serde_json::json!([
+                led.determined_position.x,
+                led.determined_position.y,
+                led.determined_position.z
+            ]),
         );
     }
     Json(Value::Object(obj))
@@ -190,6 +195,13 @@ async fn start_allon(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResp
     let mut s = state.lock();
     s.effect = Effect::AllOn;
     return (StatusCode::OK, "all on effect started");
+}
+
+async fn start_sweeping_plane(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResponse {
+    debug!("start_sweeping_plane");
+    let mut s = state.lock();
+    s.effect = Effect::SweepingPlane;
+    return (StatusCode::OK, "sweeping plane effect started");
 }
 
 async fn stop_effects(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResponse {

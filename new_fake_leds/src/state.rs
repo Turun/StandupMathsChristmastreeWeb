@@ -13,7 +13,8 @@ pub struct Vec3 {
 pub struct Led {
     pub enabled: bool,
     pub color: Color32,
-    pub position: Vec3,
+    pub determined_position: Vec3,
+    pub actual_position: Vec3,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -21,6 +22,7 @@ pub enum Effect {
     None,
     Blink,
     AllOn,
+    SweepingPlane,
 }
 
 #[derive(Clone)]
@@ -32,6 +34,10 @@ pub struct AppState {
 
     pub effect: Effect,
     pub effect_start: Instant,
+
+    // sweeping plane state
+    pub sweeping_plane_z: Vec<f32>,
+    pub sweeping_plane_hue: f32,
 
     pub rotation_x: f32,
     pub rotation_y: f32,
@@ -46,7 +52,12 @@ impl AppState {
             leds.push(super::state::Led {
                 enabled: true,
                 color: egui::Color32::BLACK,
-                position: pos,
+                determined_position: Vec3 {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                actual_position: pos,
             });
         }
 
@@ -56,6 +67,8 @@ impl AppState {
             base_color: egui::Color32::from_rgb(150, 150, 150),
             effect: Effect::None,
             effect_start: std::time::Instant::now(),
+            sweeping_plane_z: Vec::new(),
+            sweeping_plane_hue: 0.0,
             rotation_x: -std::f32::consts::FRAC_PI_2,
             rotation_y: 0.0,
             offset_x: 0.0,
