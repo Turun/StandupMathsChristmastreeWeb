@@ -23,6 +23,9 @@ pub async fn serve(state: Arc<Mutex<AppState>>) {
         .route("/configure_leds", post(configure_leds))
         .route("/set_num_leds", post(set_num_leds))
         .route("/get_num_leds", get(get_num_leds))
+        .route("/mask_led", post(mask_led))
+        .route("/unmask_led", post(unmask_led))
+        .route("/unmask_all", post(unmask_all))
         .route("/set_led_positions", post(set_led_positions))
         .route("/get_saved_led_positions", get(get_led_positions))
         .route("/effects/basecolor", post(set_basecolor))
@@ -169,6 +172,35 @@ async fn get_led_positions(State(state): State<Arc<Mutex<AppState>>>) -> Json<Va
         );
     }
     Json(Value::Object(obj))
+}
+
+async fn mask_led(
+    State(state): State<Arc<Mutex<AppState>>>,
+    Json(body): Json<Value>,
+) -> impl IntoResponse {
+    debug!("mask_led {body:?}");
+    let mut s = state.lock();
+    let n = body["num"].as_u64().unwrap() as usize;
+    s.leds[n].enabled = false;
+    return (StatusCode::OK, "success");
+}
+
+async fn unmask_led(
+    State(state): State<Arc<Mutex<AppState>>>,
+    Json(body): Json<Value>,
+) -> impl IntoResponse {
+    debug!("unmask {body:?}");
+    let mut s = state.lock();
+    let n = body["num"].as_u64().unwrap() as usize;
+    s.leds[n].enabled = true;
+    return (StatusCode::OK, "success");
+}
+
+async fn unmask_all(State(state): State<Arc<Mutex<AppState>>>) -> impl IntoResponse {
+    debug!("unmask all");
+    let mut s = state.lock();
+    s.leds.iter_mut().map(|l| l.enabled = true);
+    return (StatusCode::OK, "success");
 }
 
 async fn set_basecolor(
