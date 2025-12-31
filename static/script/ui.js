@@ -154,6 +154,28 @@ function current_led_changed() {
     }
 }
 
+// Log a message to the log panel
+export function my_log(message) {
+  const logContent = document.getElementById('log-content');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  
+  // Get current time
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { 
+    hour12: false, 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit' 
+  });
+  
+  entry.innerHTML = `<span class="log-time">[${timeStr}]</span>${message}`;
+  logContent.appendChild(entry);
+  
+  // Auto-scroll to bottom
+  logContent.scrollTop = logContent.scrollHeight;
+}
+
 export function setup_ui(
     num_leds,
     video,
@@ -224,6 +246,7 @@ export function setup_ui(
         setNumLeds(num_leds);
         allOn();
     });
+    numLedsInput.value = num_leds;  // init the value to what we currently think the right value is. fetched from the backend
 
     // populate led select dropdown
     const select = document.getElementById('led-select');

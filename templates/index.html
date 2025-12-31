@@ -231,6 +231,47 @@
       box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
     }
 
+    /* Log panel */
+    .log-panel {
+      margin-top: 15px;
+      border-top: 2px solid #e0e0e0;
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .log-header {
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .log-content {
+      background-color: #2c2c2c;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 100px;
+      max-height: 300px;
+    }
+
+    .log-entry {
+      margin-bottom: 4px;
+      word-wrap: break-word;
+    }
+
+    .log-time {
+      color: #888;
+      margin-right: 8px;
+    }
+
     /* Responsive: stack canvases on narrow screens */
     @media (max-width: 1400px) {
       .main-layout {
@@ -317,6 +358,12 @@
             <button id="effect-sweeping-plane-z-btn">Sweeping Plane Z</button>
             <button id="effect-concentric-color-btn">Concentric Color</button>
             <button id="effect-stop-btn" class="action-btn">Stop Effects</button>
+          </div>
+
+          <!-- Log Panel (visible on all tabs) -->
+          <div class="log-panel" id="log-panel">
+            <div class="log-header">Log</div>
+            <div class="log-content" id="log-content"></div>
           </div>
         </div>
       </div>

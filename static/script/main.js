@@ -7,7 +7,7 @@
 // capture_unidirectional.js the methods necessary to build the pipeline to capture pixel coordinates from one direction
 // merge_directions.js given two sets of pixel coordinates, merge, normalize, transmit to server
 
-import { setup_ui } from "./ui.js";
+import { setup_ui, my_log } from "./ui.js";
 import { getNumLeds } from "./effects.js";
 
 let num_leds = 123;  // TODO: make this configurable
@@ -28,6 +28,12 @@ getNumLeds((new_num) => {
     console.log(`got number of leds from backend, changing from ${num_leds} to ${new_num}`)
     num_leds = new_num;
 });
+
+const old_log = console.log;
+console.log = (text) => {
+    old_log(text);
+    my_log(text);
+};
 
 // on load this will run
 setup_ui(
