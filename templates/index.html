@@ -59,8 +59,8 @@
     .controls-container {
       display: flex;
       flex-direction: column;
-      min-width: 220px;
-      max-width: 250px;
+      min-width: 18em;
+      max-width: 18em;
       background-color: rgba(255, 255, 255, 0.9);
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -215,6 +215,22 @@
       margin-top: 5px;
     }
 
+    input[type="number"] {
+      padding: 5px 10px;
+      font-size: 16px;
+      border: 2px solid #4CAF50;
+      border-radius: 5px;
+      flex: 1;
+      min-width: 4em;
+      text-align: center;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #45a049;
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    }
+
     /* Responsive: stack canvases on narrow screens */
     @media (max-width: 1400px) {
       .main-layout {
@@ -256,7 +272,10 @@
         <div class="tab-content">
           <!-- Common Controls (shown in X and Y tabs only) -->
           <div class="common-controls" id="common-controls">
-            <label for="led-select">Select LED:</label>
+            <div class="btn-group">
+              <input type="number" id="num-leds-input" min="1" value="100" placeholder="# LEDs">
+              <button id="set-num-leds-btn">Set num LEDs</button>
+            </div>
             <div class="btn-group">
               <button id="btn-dec">&lt;</button>
               <select id="led-select"></select>
