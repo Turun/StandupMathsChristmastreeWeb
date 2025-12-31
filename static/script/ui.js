@@ -85,7 +85,7 @@ function startCamera(
                 diff_canvas.height = video.videoHeight;
                 math_canvas.width = video.videoWidth;
                 math_canvas.height = video.videoHeight;
-                console.log("Set sizes to " + video.videoWidth + "×" + video.videoHeight);
+                console.log(`Set sizes to ${video.videoWidth}×${video.videoHeight}`);
             });
         })
         .catch((error) => {

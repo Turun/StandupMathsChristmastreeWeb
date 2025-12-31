@@ -166,6 +166,6 @@ export async function start_capturing(
 
         console.log(`LED ${i} found at [${bestX}, ${bestY}]`);
     }
-    console.log("Capture complete.", led_positions_raw);
+    console.log("Capture complete.");
     allOn();
 }
